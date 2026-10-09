@@ -217,3 +217,54 @@ test('guess the majority over the network: picks stay secret until reveal', asyn
   assert.equal(rev.game.scores[cs[0].last.you], 1);
   cs.forEach((c) => c.close());
 });
+
+test('colors over the network: each client sees only their own hand', async () => {
+  const cs = [client(), client(), client()];
+  const { code } = await call(cs[0], 'room:create', { nickname: 'A', maxPlayers: 4 });
+  await call(cs[1], 'room:join', { code, nickname: 'B' });
+  await call(cs[2], 'room:join', { code, nickname: 'C' });
+  await call(cs[0], 'room:selectGame', { gameId: 'colors' });
+  await call(cs[0], 'game:start');
+  const views = await Promise.all(cs.map((c) => waitFor(c, (s) => s.phase === 'playing' && s.gameId === 'colors')));
+  for (const [i, v] of views.entries()) {
+    assert.equal(v.game.hand.length, 7);
+    for (const [j, w] of views.entries()) {
+      if (i === j) continue;
+      const raw = JSON.stringify(w);
+      for (const c of v.game.hand) assert.ok(!raw.includes(`{"id":${c.id},`), 'hand leaked to another client');
+    }
+  }
+  const turn = cs[views.findIndex((v) => v.game.turnId === v.you)];
+  assert.equal((await call(turn, 'game:action', { actionId: 'cd1', type: 'draw' })).ok, true);
+  cs.forEach((c) => c.close());
+});
+
+test('shayeb over the network: hands private, picking works', async () => {
+  const a = client(), b = client();
+  const { code } = await call(a, 'room:create', { nickname: 'A', maxPlayers: 4 });
+  await call(b, 'room:join', { code, nickname: 'B' });
+  await call(a, 'room:selectGame', { gameId: 'shayeb' });
+  await call(a, 'game:start');
+  const [va, vb] = await Promise.all([a, b].map((c) => waitFor(c, (s) => s.phase === 'playing' && s.gameId === 'shayeb')));
+  const rawB = JSON.stringify(vb);
+  assert.ok(va.game.hand.every((id) => !rawB.includes(`"${id}"`) || vb.game.pile.some((x) => x.pair.includes(id))));
+  const picker = va.game.turnId === va.you ? a : b;
+  assert.equal((await call(picker, 'game:action', { actionId: 'sp1', type: 'pick', index: 0 })).ok, true);
+  a.close(); b.close();
+});
+
+test('property game over the network: roll, buy decision, turn passes', async () => {
+  const a = client(), b = client();
+  const { code } = await call(a, 'room:create', { nickname: 'A', maxPlayers: 4 });
+  await call(b, 'room:join', { code, nickname: 'B' });
+  await call(a, 'room:selectGame', { gameId: 'aqar' });
+  await call(a, 'game:start');
+  const st = await waitFor(a, (s) => s.phase === 'playing' && s.gameId === 'aqar');
+  const first = st.game.turnId === st.you ? a : b;
+  const other = first === a ? b : a;
+  assert.equal((await call(other, 'game:action', { actionId: 'aq0', type: 'roll' })).error, 'not_your_turn');
+  assert.equal((await call(first, 'game:action', { actionId: 'aq1', type: 'roll' })).ok, true);
+  const after = await waitFor(other, (s) => s.game.dice);
+  assert.ok(after.game.dice.d.every((d) => d >= 1 && d <= 6));
+  a.close(); b.close();
+});

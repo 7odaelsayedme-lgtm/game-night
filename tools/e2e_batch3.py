@@ -112,10 +112,10 @@ with sync_playwright() as p:
     expect(ps[3].locator(".result-title")).to_have_text("خسرت هذه المرة")
     shot(ps[3], "m3-results", full=True)
 
-    # المضيف يعود للانتظار، والجميع يرى الألعاب الخمس الجاهزة
+    # المضيف يعود للانتظار، والجميع يرى كل الألعاب الجاهزة
     ps[0].get_by_role("button", name="غيّر اللعبة").click()
-    expect(ps[0].locator(".pick")).to_have_count(5)
-    shot(ps[0], "m4-lobby-5-games", full=True)
+    expect(ps[0].locator(".pick")).to_have_count(8)
+    shot(ps[0], "m4-lobby-all-games", full=True)
     browser.close()
 
 if errors:

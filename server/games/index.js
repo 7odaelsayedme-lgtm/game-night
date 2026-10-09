@@ -5,11 +5,10 @@ import snakes from './snakes.js';
 import spy from './spy.js';
 import connect4 from './connect4.js';
 import majority from './majority.js';
+import colors from './colors.js';
+import shayeb from './shayeb.js';
+import aqar from './aqar.js';
 
-export const GAME_MODULES = {
-  [tictactoe.id]: tictactoe,
-  [snakes.id]: snakes,
-  [spy.id]: spy,
-  [connect4.id]: connect4,
-  [majority.id]: majority,
-};
+export const GAME_MODULES = Object.fromEntries(
+  [tictactoe, snakes, spy, connect4, majority, colors, shayeb, aqar].map((m) => [m.id, m]),
+);

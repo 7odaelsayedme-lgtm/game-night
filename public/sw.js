@@ -1,9 +1,9 @@
 // عامل الخدمة: يجعل الموقع قابلًا للتثبيت كتطبيق ويفتح الواجهة بسرعة.
 // الشبكة أولًا دائمًا (حتى تصل التحديثات فورًا)، والنسخة المحفوظة فقط عند انقطاع الإنترنت.
 // لا يتدخل أبدًا في الاتصال اللحظي للعب (/socket.io).
-const CACHE = 'sahra-v3';
+const CACHE = 'sahra-v4';
 const SHELL = [
-  '/', '/css/styles.css', '/fonts/fonts.css', '/js/app.js', '/manifest.webmanifest',
+  '/', '/css/styles.css', '/css/games-cards.css', '/fonts/fonts.css', '/js/app.js', '/manifest.webmanifest',
   '/icons/icon-192.png', '/fonts/lalezar-arabic-400-normal.woff2',
 ];
 

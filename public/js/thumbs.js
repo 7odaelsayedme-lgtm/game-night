@@ -37,4 +37,16 @@ export const THUMBS = {
   draw: wrap(`
     <path d="M26 56c10-18 18-28 26-20s-4 18 6 18 12-26 22-28 10 14 14 20" fill="none" stroke="var(--teal)" stroke-width="4" stroke-linecap="round"/>
     <path d="m84 20 10-6 4 6-10 6z" fill="var(--saffron)"/><path d="m84 20 4 6-6 2z" fill="var(--red)"/>`),
+  colors: wrap(`
+    <g transform="rotate(-14 46 44)"><rect x="30" y="18" width="30" height="44" rx="6" fill="var(--red)"/><text x="45" y="48" font-size="20" text-anchor="middle" fill="var(--cream)" font-family="Lalezar, sans-serif">7</text></g>
+    <g transform="rotate(2 62 40)"><rect x="48" y="16" width="30" height="44" rx="6" fill="var(--saffron)"/><text x="63" y="46" font-size="18" text-anchor="middle" fill="var(--ink)" font-family="Lalezar, sans-serif">+2</text></g>
+    <g transform="rotate(16 80 42)"><rect x="66" y="18" width="30" height="44" rx="6" fill="var(--teal)"/><text x="81" y="47" font-size="18" text-anchor="middle" fill="var(--cream)">⇄</text></g>`),
+  shayeb: wrap(`
+    <g transform="rotate(-12 48 42)"><rect x="32" y="16" width="32" height="46" rx="5" fill="var(--cream)"/><text x="48" y="46" font-size="20" text-anchor="middle" fill="var(--red)">♥</text></g>
+    <g transform="rotate(10 72 40)"><rect x="56" y="14" width="34" height="48" rx="5" fill="var(--cream)" stroke="var(--saffron)" stroke-width="2"/><text x="73" y="45" font-size="24" text-anchor="middle" fill="var(--ink)">♚</text></g>`),
+  aqar: wrap(`
+    <rect x="28" y="12" width="64" height="56" rx="6" fill="none" stroke="var(--line)" stroke-width="2" opacity=".6"/>
+    <g>${[0, 1, 2, 3].map((i) => `<rect x="${30 + i * 15}" y="14" width="13" height="5" fill="${['#9A6B4F', '#5BC0EB', '#E86FB4', '#F08A3C'][i]}"/>`).join('')}
+      ${[0, 1, 2].map((i) => `<rect x="85" y="${22 + i * 15}" width="5" height="13" fill="${['#E0474C', '#4F6BF7', '#E0474C'][i]}"/>`).join('')}</g>
+    <path d="M48 52v-12l12-9 12 9v12z" fill="var(--saffron)"/><rect x="56" y="44" width="8" height="8" fill="var(--ink)"/>`),
 };

@@ -4,5 +4,8 @@ import snakes from './snakes.js';
 import spy from './spy.js';
 import connect4 from './connect4.js';
 import majority from './majority.js';
+import colors from './colors.js';
+import shayeb from './shayeb.js';
+import aqar from './aqar.js';
 
-export const RENDERERS = { tictactoe, snakes, spy, connect4, majority };
+export const RENDERERS = { tictactoe, snakes, spy, connect4, majority, colors, shayeb, aqar };
