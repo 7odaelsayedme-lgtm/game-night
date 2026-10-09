@@ -180,3 +180,40 @@ test('snakes over the network: server rolls, turns rotate, others see the move',
   assert.equal(after.game.pos[a.last.you], after.game.last.to);
   a.close(); b.close();
 });
+
+test('connect four over the network: full game to a vertical win', async () => {
+  const a = client(), b = client();
+  const { code } = await call(a, 'room:create', { nickname: 'A', maxPlayers: 2 });
+  await call(b, 'room:join', { code, nickname: 'B' });
+  await call(a, 'room:selectGame', { gameId: 'connect4' });
+  await call(a, 'game:start');
+  await waitFor(b, (s) => s.phase === 'playing' && s.gameId === 'connect4');
+  const d = (c, col) => call(c, 'game:action', { actionId: `c${++k}`, type: 'drop', col });
+  assert.equal((await d(b, 0)).error, 'not_your_turn');
+  for (const [c, col] of [[a, 3], [b, 4], [a, 3], [b, 4], [a, 3], [b, 4]]) assert.equal((await d(c, col)).ok, true);
+  assert.equal((await d(a, 3)).ok, true);
+  const end = await waitFor(b, (s) => s.phase === 'results');
+  assert.equal(end.game.result.line.length, 4);
+  assert.equal(end.players.find((p) => p.name === 'A').score, 1);
+  a.close(); b.close();
+});
+
+test('guess the majority over the network: picks stay secret until reveal', async () => {
+  const cs = [client(), client(), client()];
+  const { code } = await call(cs[0], 'room:create', { nickname: 'A', maxPlayers: 4 });
+  await call(cs[1], 'room:join', { code, nickname: 'B' });
+  await call(cs[2], 'room:join', { code, nickname: 'C' });
+  await call(cs[0], 'room:selectGame', { gameId: 'majority' });
+  await call(cs[0], 'game:start');
+  await waitFor(cs[2], (s) => s.phase === 'playing' && s.gameId === 'majority');
+  await call(cs[0], 'game:action', { actionId: 'm-a', type: 'answer', choice: 'A' });
+  const mid = await waitFor(cs[1], (s) => s.game.answeredIds.length === 1);
+  assert.equal(mid.game.myChoice, null);
+  assert.equal(mid.game.reveal, null);
+  await call(cs[1], 'game:action', { actionId: 'm-b', type: 'answer', choice: 'A' });
+  await call(cs[2], 'game:action', { actionId: 'm-c', type: 'answer', choice: 'B' });
+  const rev = await waitFor(cs[2], (s) => s.game.phase === 'reveal', 4000);
+  assert.deepEqual(rev.game.reveal.counts, { A: 2, B: 1 });
+  assert.equal(rev.game.scores[cs[0].last.you], 1);
+  cs.forEach((c) => c.close());
+});

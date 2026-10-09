@@ -1,6 +1,6 @@
 {
   "name": "game-night",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "سهرة ألعاب — منصة ألعاب جماعية أونلاين",
   "main": "server/index.js",
   "scripts": {
