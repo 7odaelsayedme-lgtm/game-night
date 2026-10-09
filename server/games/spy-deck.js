@@ -1,0 +1,25 @@
+// أماكن لعبة «مين الجاسوس؟» — مناسبة للعائلة. [عربي، إنجليزي]
+// يمكن إضافة أماكن جديدة بإضافة سطر بنفس الشكل.
+export const LOCATIONS = [
+  ['مطار', 'Airport'], ['مستشفى', 'Hospital'], ['مدرسة', 'School'], ['جامعة', 'University'],
+  ['مطعم شعبي', 'Local restaurant'], ['مقهى', 'Coffee shop'], ['سوق خضار', 'Vegetable market'], ['مول', 'Shopping mall'],
+  ['سينما', 'Cinema'], ['ملعب كرة قدم', 'Football stadium'], ['شاطئ', 'Beach'], ['مخيم في البر', 'Desert camp'],
+  ['استراحة', 'Rest house'], ['مزرعة', 'Farm'], ['حديقة حيوان', 'Zoo'], ['مدينة ملاهي', 'Amusement park'],
+  ['محطة بنزين', 'Gas station'], ['مغسلة سيارات', 'Car wash'], ['صالون حلاقة', 'Barber shop'], ['مخبز', 'Bakery'],
+  ['صيدلية', 'Pharmacy'], ['بنك', 'Bank'], ['مكتبة عامة', 'Public library'], ['متحف', 'Museum'],
+  ['فندق', 'Hotel'], ['قطار', 'Train'], ['طائرة', 'Airplane'], ['سفينة سياحية', 'Cruise ship'],
+  ['غواصة', 'Submarine'], ['محطة فضاء', 'Space station'], ['حفل زواج', 'Wedding party'], ['عزيمة عشاء', 'Dinner invitation'],
+  ['ورشة سيارات', 'Car workshop'], ['مصنع', 'Factory'], ['مكتب حكومي', 'Government office'], ['مركز إطفاء', 'Fire station'],
+  ['سيرك', 'Circus'], ['قصر', 'Palace'], ['قلعة قديمة', 'Old fortress'], ['جبل ثلجي', 'Snowy mountain'],
+  ['غابة', 'Forest'], ['مسبح', 'Swimming pool'], ['نادي رياضي', 'Gym'], ['صالة بولينج', 'Bowling alley'],
+  ['سوبرماركت', 'Supermarket'], ['مطبخ مطعم', 'Restaurant kitchen'], ['مختبر علمي', 'Science lab'], ['حديقة عامة', 'Public park'],
+  ['سوق ذهب', 'Gold market'], ['محل عطور', 'Perfume shop'], ['معرض كتاب', 'Book fair'], ['استوديو تلفزيون', 'TV studio'],
+  ['محطة مترو', 'Metro station'], ['باص رحلات', 'Tour bus'], ['مدينة ألعاب مائية', 'Water park'], ['مزرعة نخيل', 'Palm farm'],
+  ['سوق إبل', 'Camel market'], ['مسرح', 'Theater'], ['حفل تخرج', 'Graduation party'], ['قاعة امتحانات', 'Exam hall'],
+  ['عيادة أسنان', 'Dental clinic'], ['مغارة', 'Cave'], ['جزيرة مهجورة', 'Deserted island'], ['منارة بحرية', 'Lighthouse'],
+  ['ميناء', 'Seaport'], ['مخيم كشافة', 'Scout camp'], ['بقالة الحي', 'Corner shop'], ['مكتب بريد', 'Post office'],
+  ['ملعب تنس', 'Tennis court'], ['حلبة سباق', 'Race track'], ['محمية طبيعية', 'Nature reserve'], ['سوق شعبي', 'Traditional souk'],
+  ['محل إلكترونيات', 'Electronics store'], ['مكتب شركة', 'Company office'], ['ملعب أطفال', 'Playground'], ['قرية تراثية', 'Heritage village'],
+  ['مطار مروحيات', 'Helipad'], ['محل حلويات', 'Sweet shop'], ['معرض سيارات', 'Car showroom'], ['مركز تزلج', 'Ski center'],
+  ['قارب صيد', 'Fishing boat'], ['ملعب جولف', 'Golf course'], ['محطة أرصاد', 'Weather station'], ['حديقة ورود', 'Flower garden'],
+];

@@ -48,6 +48,12 @@ export const sfx = {
   lose: () => [392, 330, 262].forEach((f, i) => tone(f, 0.2, 'sine', 0.07, i * 0.14)),
   draw: () => { tone(440, 0.14); tone(440, 0.14, 'sine', 0.08, 0.18); },
   error: () => tone(180, 0.12, 'square', 0.03),
+  dice: () => [0, 1, 2, 3].forEach((i) => tone(300 + Math.random() * 300, 0.04, 'square', 0.025, i * 0.07)),
+  step: () => tone(700, 0.035, 'triangle', 0.035),
+  up: () => [523, 659, 784, 988].forEach((f, i) => tone(f, 0.1, 'triangle', 0.07, i * 0.07)),
+  down: () => [784, 622, 494, 392, 311].forEach((f, i) => tone(f, 0.12, 'sawtooth', 0.03, i * 0.08)),
+  reveal: () => { tone(392, 0.12); tone(587, 0.18, 'sine', 0.08, 0.12); },
+  send: () => tone(880, 0.06, 'sine', 0.05),
 };
 
 export const buzz = (ms = 12) => { if (prefs.sound) navigator.vibrate?.(ms); };

@@ -122,7 +122,7 @@ with sync_playwright() as p:
     s.locator(".lang-btn").click()
     expect(s.locator("html")).to_have_attribute("dir", "ltr")
     shot(s, "11-home-en-small", full=True)
-    overflow = s.evaluate("document.documentElement.scrollWidth > window.innerWidth")
+    overflow = s.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth")
     assert not overflow, "horizontal overflow on 340px"
 
     desk = browser.new_context(viewport={"width": 1280, "height": 860})

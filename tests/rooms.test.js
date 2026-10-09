@@ -45,7 +45,7 @@ test('only the host can select games and start; player count is enforced', () =>
   const { player: guest } = rm.join(room.code, 'G');
   assert.equal(rm.start(room.code, guest.id).error, 'host_only');
   assert.equal(rm.selectGame(room.code, guest.id, 'tictactoe').error, 'host_only');
-  assert.equal(rm.selectGame(room.code, host.id, 'spy').error, 'game_unavailable');
+  assert.equal(rm.selectGame(room.code, host.id, 'connect4').error, 'game_unavailable');
   assert.equal(rm.selectGame(room.code, host.id, 'nope').error, 'game_unavailable');
   assert.equal(rm.start(room.code, host.id).ok, true);
   assert.equal(rm.start(room.code, host.id).error, 'match_in_progress');

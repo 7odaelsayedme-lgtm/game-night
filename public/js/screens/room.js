@@ -189,6 +189,8 @@ export default {
     return {
       room: this.room,
       byId: (id) => this.byId(id),
+      // تقدير وقت الخادم الحالي لعرض العدادات بدقة
+      now: () => Date.now() + ((this.room?.serverNow || Date.now()) - this.app.store.receivedAt),
       act: (payload) => call('game:action', { ...payload, actionId: actionId() }),
       onError: (code) => { sfx.error(); toast(errText(code), 'error'); },
     };

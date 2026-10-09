@@ -142,3 +142,41 @@ test('opening the same seat in a second tab replaces the first connection', asyn
   assert.equal((await call(a2, 'game:start')).ok, true);
   a.close(); a2.close(); b.close();
 });
+
+test('find the spy over the network: private roles never leak to other clients', async () => {
+  const cs = [client(), client(), client(), client()];
+  const { code } = await call(cs[0], 'room:create', { nickname: 'A', maxPlayers: 6 });
+  for (const [i, c] of cs.slice(1).entries()) await call(c, 'room:join', { code, nickname: `P${i}` });
+  assert.equal((await call(cs[0], 'room:selectGame', { gameId: 'spy' })).ok, true);
+  assert.equal((await call(cs[0], 'game:start')).ok, true);
+  const views = await Promise.all(cs.map((c) => waitFor(c, (s) => s.phase === 'playing' && s.gameId === 'spy')));
+  const spies = views.filter((v) => v.game.role === 'spy');
+  const agents = views.filter((v) => v.game.role === 'agent');
+  assert.equal(spies.length, 1);
+  assert.equal(agents.length, 3);
+  const secret = agents[0].game.location;
+  assert.ok(agents.every((v) => JSON.stringify(v.game.location) === JSON.stringify(secret)));
+  for (const v of views) assert.equal(v.game.spyId, null);
+  const spyRaw = JSON.stringify(spies[0]);
+  assert.ok(!spyRaw.includes('"location":["'), 'spy must not receive the location');
+  // تخمين الجاسوس من خارج دوره مرفوض لغير الجاسوس
+  const agentClient = cs[views.indexOf(agents[0])];
+  assert.equal((await call(agentClient, 'game:action', { actionId: 'g1', type: 'spy_guess', loc: 0 })).error, 'not_the_spy');
+  cs.forEach((c) => c.close());
+});
+
+test('snakes over the network: server rolls, turns rotate, others see the move', async () => {
+  const a = client(), b = client();
+  const { code } = await call(a, 'room:create', { nickname: 'A', maxPlayers: 4 });
+  await call(b, 'room:join', { code, nickname: 'B' });
+  await call(a, 'room:selectGame', { gameId: 'snakes' });
+  await call(a, 'game:start');
+  const st = await waitFor(b, (s) => s.phase === 'playing' && s.gameId === 'snakes');
+  assert.equal(st.game.turnId, a.last.you);
+  assert.equal((await call(b, 'game:action', { actionId: 's1', type: 'roll' })).error, 'not_your_turn');
+  assert.equal((await call(a, 'game:action', { actionId: 's2', type: 'roll', value: 6 })).ok, true);
+  const after = await waitFor(b, (s) => s.game.last);
+  assert.ok(after.game.last.roll >= 1 && after.game.last.roll <= 6);
+  assert.equal(after.game.pos[a.last.you], after.game.last.to);
+  a.close(); b.close();
+});

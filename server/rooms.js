@@ -159,7 +159,7 @@ export class RoomManager {
   removePlayer(room, playerId) {
     if (room.phase === 'playing' && room.game) {
       const mod = GAME_MODULES[room.gameId];
-      mod.playerLeft?.(room.game, playerId);
+      mod.playerLeft?.(room.game, playerId, { now: this.now() });
     }
     room.players.delete(playerId);
     room.seenActions.delete(playerId);
@@ -207,7 +207,7 @@ export class RoomManager {
     if (roster.length < mod.minPlayers) return fail('not_enough_players');
     if (!meta.spectators && roster.length > meta.maxPlayers) return fail('too_many_players');
     const prev = room.lastOutcome?.gameId === room.gameId ? room.lastOutcome.state : null;
-    room.game = mod.setup(roster, prev);
+    room.game = mod.setup(roster, prev, { now: this.now() });
     room.phase = 'playing';
     room.round += 1;
     room.seenActions = new Map();
@@ -233,7 +233,7 @@ export class RoomManager {
     room.seenActions.set(playerId, seen);
 
     const mod = GAME_MODULES[room.gameId];
-    const res = mod.action(room.game, playerId, payload);
+    const res = mod.action(room.game, playerId, payload, { now: this.now() });
     if (!res.ok) return res;
     this.checkFinished(room);
     this.touch(room);
@@ -245,9 +245,11 @@ export class RoomManager {
     const mod = GAME_MODULES[room.gameId];
     const outcome = mod.outcome(room.game);
     if (!outcome) return;
-    for (const id of outcome.winners) {
+    // النقاط: إما جدول نقاط تحدده اللعبة، أو نقطة لكل فائز
+    const points = outcome.points || Object.fromEntries(outcome.winners.map((id) => [id, 1]));
+    for (const [id, n] of Object.entries(points)) {
       const p = room.players.get(id);
-      if (p) p.score += 1;
+      if (p) p.score += n;
     }
     room.phase = 'results';
     room.lastOutcome = { gameId: room.gameId, state: room.game, outcome };
@@ -263,6 +265,21 @@ export class RoomManager {
     this.touch(room);
     this.onChange(room);
     return { ok: true };
+  }
+
+  // مؤقتات الألعاب (مثل وقت السؤال والتصويت) — يُستدعى كل ثانية
+  tick() {
+    const now = this.now();
+    for (const room of this.rooms.values()) {
+      if (room.phase !== 'playing' || !room.game) continue;
+      const mod = GAME_MODULES[room.gameId];
+      if (!mod.tick) continue;
+      const connected = new Set(this.connectedIds(room));
+      if (mod.tick(room.game, now, connected)) {
+        this.checkFinished(room);
+        this.onChange(room);
+      }
+    }
   }
 
   // تنظيف دوري: إخراج المنقطعين طويلًا، نقل الاستضافة، وحذف الغرف المهجورة
@@ -317,6 +334,7 @@ export class RoomManager {
         graceLeftMs: p.connected ? null : Math.max(0, LIMITS.DISCONNECT_GRACE_MS - (this.now() - p.disconnectedAt)),
       })),
       game,
+      serverNow: this.now(),
       outcome: room.phase === 'results' ? room.lastOutcome?.outcome : null,
     };
   }

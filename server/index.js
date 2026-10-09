@@ -109,7 +109,8 @@ export function createServer() {
   });
 
   const sweeper = setInterval(() => rooms.sweep(), 5000);
-  server.on('close', () => clearInterval(sweeper));
+  const ticker = setInterval(() => rooms.tick(), 1000);
+  server.on('close', () => { clearInterval(sweeper); clearInterval(ticker); });
 
   return { app, server, io, rooms, normalizeCode };
 }
