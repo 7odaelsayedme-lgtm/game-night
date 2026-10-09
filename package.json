@@ -1,0 +1,23 @@
+{
+  "name": "game-night",
+  "version": "0.1.0",
+  "description": "سهرة ألعاب — منصة ألعاب جماعية أونلاين",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.22.3",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
