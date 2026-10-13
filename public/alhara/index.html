@@ -101,7 +101,16 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 .pk .cdo{position:absolute;inset:0;background:rgba(43,26,18,.35);display:grid;place-items:center;color:var(--paper);font:900 18px var(--body)}
 .legend{font-size:12px;color:var(--mute);padding:0 12px 10px;line-height:1.5}
 
-#board{left:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(360px,calc(100% - 32px));max-height:calc(100% - 290px)}
+#board{left:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(430px,calc(100% - 32px));max-height:calc(100% - 250px)}
+#modeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:10px 12px 4px;overflow-y:auto;touch-action:pan-y;min-height:0;flex:1 1 auto}
+.md{display:grid;gap:1px;text-align:right;background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:6px 10px;cursor:pointer;font:inherit;color:var(--ink);align-content:start}
+.md .i{font-size:26px;line-height:1.2}
+.md .n{font-family:var(--display);font-size:18px;line-height:1.25}
+.md .d{font-size:12px;line-height:1.5;color:var(--mute)}
+.md .p{font-size:11px;font-weight:900;color:var(--leaf)}
+.md.sel{background:#ffe7a8;box-shadow:inset 0 0 0 3px var(--pink)}
+#board .bnote{padding-top:4px;margin:0}
+#boardList{max-height:120px;flex:none}
 #boardList{list-style:none;margin:0;padding:8px 12px;overflow-y:auto;display:grid;gap:6px;touch-action:pan-y}
 #boardList li,#resList li{display:flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:12px;padding:4px 10px;background:var(--paper);font-weight:700}
 #boardList li.me,#resList li.me{background:#ffe7a8}
@@ -173,7 +182,8 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   #jump{width:66px;height:66px}
   .pill{font-size:18px;padding:1px 10px}.pill small{display:none}
   .ibtn{width:42px;height:42px;font-size:18px}
-  #board{left:16px;top:calc(env(safe-area-inset-top,0px) + 112px);max-height:50%}
+  #board{left:16px;top:calc(env(safe-area-inset-top,0px) + 112px);max-height:62%}
+  #modeGrid{grid-template-columns:1fr 1fr}
   #prankPanel,#chat{left:16px;right:auto;top:calc(env(safe-area-inset-top,0px) + 112px);bottom:auto;max-height:38%;min-height:0}
   #prankPanel{right:16px;left:auto}
   #toasts{top:calc(env(safe-area-inset-top,0px) + 110px)}
@@ -192,7 +202,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
     <div class="pill" id="mini" hidden></div>
   </div>
   <div class="hgroup">
-    <button class="ibtn" id="boardBtn" aria-label="التحدي">🏆</button>
+    <button class="ibtn" id="boardBtn" aria-label="التحديات">🎮</button>
     <button class="ibtn" id="chatBtn" aria-label="الدردشة">💬<span class="badge" id="unread" hidden>0</span></button>
     <button class="ibtn" id="soundBtn" aria-label="الصوت">🔊</button>
     <button class="ibtn" id="pauseBtn" aria-label="إيقاف مؤقت">⏸</button>
@@ -214,10 +224,11 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 </section>
 
 <section class="panel" id="board" dir="rtl" hidden>
-  <header><b>التحدي</b><button class="x" id="boardClose" aria-label="اقفل">✕</button></header>
-  <p class="bnote" id="boardNote" style="padding-top:8px">ارمي بالونة أو شبشب على لاعب، أو سيب له فخ في طريقه.</p>
+  <header><b>التحديات</b><button class="x" id="boardClose" aria-label="اقفل">✕</button></header>
+  <div id="modeGrid"></div>
+  <p class="bnote" id="boardNote"></p>
+  <button id="matchBtn" type="button">ابدأ</button>
   <ol id="boardList"></ol>
-  <button id="matchBtn" type="button">ابدأ تحدّي ٣ دقايق</button>
 </section>
 
 <section class="panel" id="chat" dir="rtl" hidden>
@@ -237,6 +248,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
       <li><b>العصا</b> للمشي، ودفعها للآخر = جري</li>
       <li><b>🎒 المقالب</b> اختار المقلب، وزرار المقلب الكبير ينفّذه</li>
       <li><b>نط</b> عشان تفلت، و<b>💨 الدخان</b> و<b>🥸 التنكّر</b> بيضيّعوا الجار</li>
+      <li><b>🎮</b> تحديات ضد صحابك: حرب السراير، سباق الموانع، والمزيد</li>
     </ul>
     <div class="field"><label for="nickStart">اسمك في الحارة:</label><input id="nickStart" maxlength="16" autocomplete="off"></div>
     <button class="cta" id="playBtn">يلا نلعب</button>
@@ -261,7 +273,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   <div class="card">
     <h1 id="resTitle">التحدي خلص!</h1>
     <ol id="resList"></ol>
-    <div class="row"><button class="cta" id="rematchBtn">تحدّي جديد</button><button class="cta alt" id="soloBtn">العب لوحدك</button></div>
+    <div class="row"><button class="cta" id="rematchBtn">تحدّي تاني</button><button class="cta alt" id="soloBtn">ارجع للحارة</button></div>
   </div>
 </div>
 
@@ -1319,7 +1331,7 @@ const needNb = range => () => nearestNeighbor(range) ? true : 'قرّب من ج�
 function nearestAvatar(range){
   if (!pvpLive() || ACTOR !== 'me') return null;
   let best = null, bd = range;
-  for (const av of avatars.values()){ if (av.immune > 0) continue; const d = Math.hypot(av.x - P.x, av.z - P.z); if (d < bd){ bd = d; best = av; } }
+  for (const av of avatars.values()){ if (av.immune > 0 || (av.mi || 0) !== (MODE.ep || 0)) continue; const d = Math.hypot(av.x - P.x, av.z - P.z); if (d < bd){ bd = d; best = av; } }
   return best;
 }
 function pickTarget(range){
@@ -1502,6 +1514,7 @@ const cds = {}; PRANKS.forEach(p => cds[p.id] = 0);
 let selected = PR[store.get('hara-prank', 'balloon')] || PR.balloon;
 
 function doPrank(){
+  if (MODE.id) return modeAction();
   if (!G.running || G.paused) return;
   const pr = selected;
   if (cds[pr.id] > 0){ toast('استنى ' + Math.ceil(cds[pr.id]) + ' ثانية', 'warn', 1.2); sfx('nope'); return; }
@@ -1741,7 +1754,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (e.code === 'Space'){ doJump(); e.preventDefault(); }
   if (e.code === 'KeyE' || e.code === 'Enter') doPrank();
-  if (e.code === 'KeyQ') togglePanel('prank');
+  if (e.code === 'KeyQ'){ if (MODE.id) modeAction2(); else togglePanel('prank'); }
   if (e.code === 'KeyT'){ togglePanel('chat'); e.preventDefault(); }
   if (e.code === 'KeyB'){ togglePanel('board'); renderBoard(); }
   if (e.code === 'Escape') togglePause();
@@ -1771,11 +1784,11 @@ function bindBtn(el, fn){
 }
 bindBtn($('jump'), () => doJump());
 bindBtn($('prank'), () => doPrank());
-bindBtn($('menuBtn'), () => togglePanel('prank'));
+bindBtn($('menuBtn'), () => MODE.id ? modeAction2() : togglePanel('prank'));
 document.addEventListener('contextmenu', e => { if (!typing(e)) e.preventDefault(); });
 
 function doJump(){
-  if (!G.running || G.paused || P.air) return;
+  if (!G.running || G.paused || P.air || (MODE.id && !MODE.alive)) return;
   P.vy = 9.5; P.air = true; player.sq = 1.25; sfx('jump');
 }
 
@@ -1865,6 +1878,7 @@ function resetGame(){
   cart.t = 0;
 }
 function startGame(){
+  if (MODE.id) clearMode();
   audioInit();
   const nk = clean($('nickStart').value, 16); if (nk){ setNick(nk); }
   resetGame();
@@ -2003,7 +2017,9 @@ function syncAvatars(peers){
       av = {p, x:pp.x, z:pp.z, y:0, ty:0, tx:pp.x, tz:pp.z, r:0, tag:mkTag(''), peer:pr.peer, immune:0, sc:0, s:'', name:'لاعب'};
       avatars.set(pr.peer, av);
     }
-    av.ty = clamp(+pp.y || 0, 0, 4); av.sc = Math.max(0, Math.min(99999, pp.sc|0)); av.s = typeof pp.s === 'string' ? pp.s.slice(0,8) : '';
+    av.mi = +pp.mi || 0; av.ma = pp.ma === 0 ? 0 : 1; av.mo = pp.mo ? 1 : 0; av.mf = pp.mf ? 1 : 0;
+    av.ms = Math.max(-1e6, Math.min(1e6, +pp.ms || 0)); av.md = typeof pp.md === 'string' ? clean(pp.md, 14) : '';
+    av.ty = clamp(+pp.y || 0, 0, 9); av.sc = Math.max(0, Math.min(99999, pp.sc|0)); av.s = typeof pp.s === 'string' ? pp.s.slice(0,8) : '';
     av.tx = clamp(+pp.x || 0, -WALK, WALK); av.tz = clamp(+pp.z || 0, -L, L); av.r = +pp.r || 0;
     av.name = clean(pp.n, 16) || 'لاعب'; av.tag.textContent = av.name;
     av.p.disguise.visible = !!pp.d; av.dg = pp.d ? 1 : 0; av.h = !!pp.h; av.inv = !!pp.i;
@@ -2030,6 +2046,9 @@ function updateAvatars(dt){
     setMood(av.p, st ? (st === 'dance' ? 'happy' : 'shock') : 'happy');
     if (st === 'float'){ if (!av.bubble){ av.bubble = bubbleMesh(); scene.add(av.bubble); } av.bubble.position.set(av.x, av.y + 1.3, av.z); }
     else if (av.bubble){ scene.remove(av.bubble); av.bubble = null; }
+    const vis = (av.mi || 0) === (MODE.ep || 0) && av.ma !== 0;
+    av.p.g.visible = vis; av.tag.hidden = !vis;
+    if (av.ring && !MODE.id){ av.p.g.remove(av.ring); av.ring = null; }
     placeEl(av.tag, av.p.g.position, 3.2);
   }
 }
@@ -2037,6 +2056,8 @@ function sendPresence(dt){
   if (!room) return;
   presT -= dt; if (presT > 0) return; presT = .12;
   const pres = {n:myNick, c:myColor, x:Math.round(P.x*100)/100, z:Math.round(P.z*100)/100, y:Math.round(P.y*10)/10, r:Math.round(player.g.rotation.y*100)/100, d:P.disguise > 0 ? 1 : 0, sc:G.score, s:playerStatus(), h:P.hidden ? 1 : 0, i:P.inv > 0 ? 1 : 0, v:document.hidden ? 0 : 1};
+  if (MODE.id){ const sc = myModeScore(); Object.assign(pres, {mi:MODE.ep, ma:MODE.alive ? 1 : 0, mo:MODE.out ? 1 : 0, mf:MODE.finished ? 1 : 0, ms:sc.ms, md:sc.md}); }
+  else Object.assign(pres, {mi:0, ma:1, mo:0, mf:0, ms:0, md:''});
   const s = JSON.stringify(pres);
   if (s === lastPres && !presenceDirty) return;
   lastPres = s; presenceDirty = false;
@@ -2135,7 +2156,8 @@ function pvpAttack(kind, av, silent){
   av.immune = 1.6;
   pvpVisual(kind, P, av, () => { hitFx(kind, av); gain(PVP_PTS[kind], 4, PVP_WIN[kind] + ' ' + av.name, vpos(av, 2)); });
 }
-function applyHit(kind, who){
+function applyHit(kind, who, from){
+  if (MODE.id) return modeOnHit(kind, who, from);
   if (!G.running || P.pvpInv > 0) return;
   P.pvpInv = 1.6;
   toast(who + ' ' + (HIT_TXT[kind] || 'عمل فيك مقلب!'), 'warn', 2.4);
@@ -2179,17 +2201,20 @@ function playerStatus(){
 function onAct(msg){
   if (msg.sameTab) return;
   const d = msg.data || {}, k = d.k;
-  const bulk = k === 'nb' || k === 'pop' || k === 'say' || k === 'reward' || k === 'toast';
+  const bulk = k === 'nb' || k === 'pop' || k === 'say' || k === 'reward' || k === 'toast' || k === 'mst';
   const key = msg.peer + (bulk ? ':b' : ''), now = Date.now(), arr = (actRate.get(key) || []).filter(t => now - t < 5000);
-  if (arr.length >= (bulk ? 140 : 14)) return;
+  if (arr.length >= (bulk ? 140 : 40)) return;
   arr.push(now); actRate.set(key, arr);
   const from = avatars.get(msg.peer), who = from ? from.name : 'لاعب';
+  if (['mstart','mst','mend','mko','bedhit','wall','wallhit','catch','caught','push'].includes(k)) return onModeMsg(k, d, msg, from, who);
+  const sameWorld = !from || (from.mi || 0) === (MODE.ep || 0);
+  if (!sameWorld && (PVP_KINDS.includes(k) || k === 'trap' || k === 'gotcha' || k === 'np')) return;
   if (PVP_KINDS.includes(k)){
     const to = typeof d.to === 'string' ? d.to : '';
     const me = !!to && to === myPeerId;
     const tgt = me ? P : avatars.get(to);
     if (!tgt) return;
-    pvpVisual(k, from || null, tgt, () => { hitFx(k, tgt); if (me) applyHit(k, who); });
+    pvpVisual(k, from || null, tgt, () => { hitFx(k, tgt); if (me) applyHit(k, who, msg.peer); });
   } else if (k === 'trap' && SHARED_TRAPS.includes(d.kind)){
     const tid = String(d.tid || '').slice(0, 24);
     if (!tid || traps.some(t => t.tid === tid)) return;
@@ -2204,7 +2229,7 @@ function onAct(msg){
     if (msg.peer === hostId && !isHost()) applyNb(d);
   } else if (k === 'np'){
     const pr = PR[d.p];
-    if (!isHost() || !from || !pr || pr.id === 'disguise') return;
+    if (!isHost() || !from || !pr || pr.id === 'disguise' || MODE.id) return;
     hostRun(pr, msg.peer, {x:clamp(+d.x || 0, -WALK, WALK), z:clamp(+d.z || 0, -L+1, L-1), y:clamp(+d.y || 0, 0, 4), r:+d.r || 0});
   } else if (k === 'reward'){
     if (msg.peer === hostId && d.to === myPeerId) gain(clamp(d.p|0, 0, 30), clamp(d.c|0, 0, 8), clean(d.t, 50) || null, null);
@@ -2219,6 +2244,7 @@ function onAct(msg){
     const n = neighbors[d.i|0];
     if (n && msg.peer === hostId && d.to === myPeerId && G.running && P.inv <= 0){ say(n, pick(n.lines.caught)); loseHeart(n); }
   } else if (k === 'match'){
+    if (MODE.id) return;
     startMatch(who, clamp(+d.dur || 180, 60, 300));
   }
 }
@@ -2260,7 +2286,7 @@ function netBroadcast(dt){
   if (room && chatState.live && !isHost() && performance.now() - lastNbAt > 3500){
     staleHosts.set(hostId, Date.now()); electHost(room.peers()); lastNbAt = performance.now();
   }
-  if (!netHost()) return;
+  if (!netHost() || MODE.id) return;
   popBudget = Math.min(10, popBudget + dt*8);
   nbT -= dt; if (nbT > 0) return; nbT = .1;
   shareAct({k:'nb',
@@ -2390,8 +2416,687 @@ function cosmetic(id){
   }
 }
 
+/* =========================================================
+   CHALLENGE MODES — pick a mode, it starts for everyone in the room
+   ========================================================= */
+const MODES = {
+  pranks:  {icon:'😈', name:'سباق المقالب', short:'مقالب في الجيران وفي بعض', desc:'٣ دقايق مقالب في الجيران وفي بعض. اللي يجمع نقط أكتر يكسب.', min:1, dur:180},
+  beds:    {icon:'🛏️', name:'حرب السراير', short:'فريقين، احمي سريرك واكسر التاني', desc:'فريقين. ابني حيطان حوالين سريرك واكسر سرير الفريق التاني. طول ما سريرك سليم بترجع لو وقعت، ولو اتكسر تبقى آخر فرصة ليك.', min:2, dur:300},
+  balloons:{icon:'💦', name:'حرب البلالين', short:'كل واحد لنفسه، ٣ بلالين وتقع', desc:'كل واحد لنفسه. أي حد ياخد ٣ بلالين يقع ويرجع بعد ثانيتين. اللي يوقّع أكتر في دقيقتين ونص يكسب.', min:2, dur:150},
+  obby:    {icon:'🏁', name:'سباق الموانع', short:'نط لحد آخر الحارة', desc:'نط فوق الصناديق والمنصات اللي بتتحرك لحد خط النهاية. لو وقعت في الميه ترجع لآخر علامة خضرا. أسرع واحد يكسب.', min:1, dur:180},
+  flood:   {icon:'🌊', name:'الحارة غرقت', short:'الميه بتعلى، اطلع فوق', desc:'الميه بتعلى كل ثانية! اطلع على الأعمدة وزقّ صحابك. آخر واحد يفضل ناشف يكسب.', min:1, dur:180},
+  chickens:{icon:'🐔', name:'مطاردة الفراخ', short:'امسك أكتر عدد فراخ', desc:'الفراخ هربت في الحارة! امسك أكتر عدد في دقيقتين. الفرخة الدهبي بـ٣، وارمي شبشب على اللي بينافسك.', min:1, dur:120},
+};
+const TEAM_COL = {r:'#e84b3c', b:'#3a7bd5'}, TEAM_NAME = {r:'الأحمر', b:'الأزرق'}, TEAM_ICO = {r:'🔴', b:'🔵'};
+const BED_Z = {r:43, b:-43}, BED_HP = 12, WALL_COST = 4;
+const MODE = {id:null, ep:0, t:0, dur:0, st:{beds:{r:BED_HP, b:BED_HP}, walls:[], chickens:[]}, pend:new Set(), teams:{}, pl:[], alive:true, out:false};
+let modeSel = 'beds', plats = [];
+const arena = new THREE.Group(); scene.add(arena);
+const chickMeshes = new Map(), wallPlats = new Map();
+const meId = () => myPeerId || 'me';
+function mulberry(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const camDir = () => (MODE.id === 'beds' && MODE.team === 'b') ? -1 : 1;
+const fmtT = s => Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
+
+/* ---- platforms: solid boxes you can stand on and bump into ---- */
+function addPlat(x, z, w, d, top, color, opt = {}){
+  const h = opt.h || Math.max(.3, top);
+  const m = opt.ghost ? new THREE.Object3D() : M(box(w, h, d), color, .03, true);
+  m.position.set(x, top - h/2, z); arena.add(m);
+  const p = Object.assign({m, x, z, bx:x, bz:z, w, d, top, h, dx:0, dz:0, solid:true}, opt);
+  plats.push(p); return p;
+}
+function dropPlat(p){ const i = plats.indexOf(p); if (i >= 0) plats.splice(i,1); arena.remove(p.m); }
+function groundAt(x, z, y){
+  let g = groundY(x), on = null;
+  for (const p of plats){
+    if (!p.solid) continue;
+    if (Math.abs(x - p.x) < p.w/2 + .2 && Math.abs(z - p.z) < p.d/2 + .2 && y >= p.top - .45 && p.top > g){ g = p.top; on = p; }
+  }
+  return {g, on};
+}
+function platPush(){
+  for (const p of plats){
+    if (!p.solid || P.y >= p.top - .45 || P.y + 1.6 < p.top - p.h) continue;
+    const ox = p.w/2 + .35 - Math.abs(P.x - p.x), oz = p.d/2 + .35 - Math.abs(P.z - p.z);
+    if (ox > 0 && oz > 0){ if (ox < oz) P.x += Math.sign(P.x - p.x || 1)*ox; else P.z += Math.sign(P.z - p.z || 1)*oz; }
+  }
+}
+function updatePlats(){
+  for (const p of plats){
+    p.dx = p.dz = 0;
+    if (p.mov){ const nx = p.bx + Math.sin(MODE.t*p.mov.sp + p.mov.ph)*p.mov.amp; p.dx = nx - p.x; p.x = nx; p.m.position.x = nx; }
+    if (p.blink){
+      const T = p.blink.on + p.blink.off, ph = (MODE.t + p.blink.ph) % T;
+      p.solid = ph < p.blink.on;
+      p.m.visible = p.solid && !(ph > p.blink.on - .7 && Math.floor(ph*10) % 2);
+    }
+  }
+}
+function waterPlane(w, d, y, z){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({color:0x3aa0e8, transparent:true, opacity:.72, depthWrite:false}));
+  m.rotation.x = -Math.PI/2; m.position.set(0, y, z); arena.add(m); return m;
+}
+function flagAt(x, y, z, col){
+  put(arena, M(cyl(.06,.06,2.2,6), '#ffffff', .1), x, y + 1.1, z);
+  const f = put(arena, M(box(.9,.55,.05), col, .06), x + .48, y + 1.9, z); f.rotation.y = .2;
+}
+function teamRing(t){
+  const r = new THREE.Mesh(new THREE.RingGeometry(.55, .78, 24), new THREE.MeshBasicMaterial({color:TEAM_COL[t], transparent:true, opacity:.95, depthWrite:false}));
+  r.rotation.x = -Math.PI/2; r.position.y = .06; return r;
+}
+function goldify(g){
+  g.traverse(o => { if (o.isMesh && (o.material === toon('#ffffff') || o.material === toon('#f2f2f2'))) o.material = toon('#ffd34d'); });
+  g.scale.setScalar(1.25);
+  put(g, M(cone(.14,.22,5), '#ffc93c', .1), 0, 1.25, .3);
+}
+
+/* ---- arenas ---- */
+function bedMesh(t){
+  const g = new THREE.Group(), s = t === 'r' ? 1 : -1;
+  put(g, M(box(1.6,.35,2.4), '#7a4b2a', .04, true), 0, .35, 0);
+  for (const [lx, lz] of [[-.7,-1.1],[.7,-1.1],[-.7,1.1],[.7,1.1]]) put(g, M(box(.14,.3,.14), '#5a3418', .08), lx, .15, lz);
+  g.userData.mat = put(g, M(box(1.45,.28,2.2), TEAM_COL[t], .04), 0, .66, 0);
+  g.userData.pil = put(g, M(box(1.1,.2,.5), '#ffffff', .06), 0, .88, s*.75);
+  put(g, M(box(1.6,1.0,.15), '#7a4b2a', .04, true), 0, .75, s*1.2);
+  g.position.set(0, 0, BED_Z[t]); arena.add(g);
+  return g;
+}
+function buildArena(){
+  const rnd = mulberry(MODE.seed || 1), R = (a, b) => a + rnd()*(b - a), pick_ = a => a[(rnd()*a.length)|0];
+  const C = ['#ffc93c','#ff5d8f','#3a7bd5','#2fae6f','#ff8a3d','#8a5cf5'];
+  const crate = (x, z, s, top) => addPlat(x, z, s, s, top || s, '#c08a52');
+  if (MODE.id === 'beds'){
+    MODE.beds = {};
+    for (const t of ['r','b']){
+      const base = put(arena, new THREE.Mesh(box(10,.04,9), toon(shade(TEAM_COL[t], .25))), 0, .2, BED_Z[t]); base.receiveShadow = true;
+      MODE.beds[t] = bedMesh(t);
+      addPlat(0, BED_Z[t], 1.6, 2.4, .75, '', {ghost:true, bed:t});
+      const tag = mkTag(''); tag.style.fontSize = '18px'; MODE.bedTags = MODE.bedTags || {}; MODE.bedTags[t] = tag;
+    }
+    for (const z of [12, 24]) for (const x of [-2.6, 2.6]){ crate(x, z, 1.4); crate(-x, -z, 1.4); }
+    crate(0, 0, 1.6); crate(-3.6, 6, 1.2); crate(3.6, -6, 1.2);
+  } else if (MODE.id === 'balloons'){
+    for (let i = 0; i < 7; i++){ const x = R(-3.8, 3.8), z = R(4, 40), s = R(1.1, 1.7); crate(x, z, s); crate(-x, -z, s); }
+  } else if (MODE.id === 'chickens'){
+    for (let i = 0; i < 5; i++){ const x = R(-3.5, 3.5), z = R(-38, 38); addPlat(x, z, 1.7, 1.1, .9, '#e6c35c'); }
+  } else if (MODE.id === 'obby'){
+    MODE.noObs = true;
+    addPlat(0, 42.5, 10.4, 9, .7, '#e9e1d2', {kind:'start'});
+    MODE.cps = [{x:0, z:41.5, y:.7}];
+    let edge = 38;
+    const P_ = (x, d, w, top, col, opt = {}) => { const cz = edge - d/2; const p = addPlat(x, cz, w, d, top, col, Object.assign({h:.5}, opt)); edge = cz - d/2; return p; };
+    const gap = g => { edge -= g; };
+    const pieces = {
+      stones(){ for (let i = 0; i < 3; i++){ gap(1.7); P_(R(-2.2, 2.2), 1.5, 1.5, .9, pick_(C)); } },
+      stairs(){ [1.3, 2.0, 2.7].forEach(t => { gap(1.4); P_(R(-1.5, 1.5), 1.8, 2.4, t, pick_(C)); }); },
+      mover(){ for (let i = 0; i < 2; i++){ gap(1.8); P_(0, 2, 2.4, 1.2, '#8a5cf5', {mov:{amp:2.6, sp:1.2 + i*.4, ph:rnd()*6}}); } },
+      zig(){ let s = rnd() < .5 ? -1 : 1; for (let i = 0; i < 4; i++){ gap(1.3); P_(s*1.6, 1.4, 1.4, 1.0 + i*.15, pick_(C)); s = -s; } },
+      blink(){ for (let i = 0; i < 3; i++){ gap(1.5); P_(R(-1.5, 1.5), 1.8, 1.8, 1.0, '#ff8a3d', {blink:{on:2.2, off:1.1, ph:i*1.1}}); } },
+      bridge(){ gap(1.6); P_(R(-1, 1), 6.5, .75, 1.3, '#7a4b2a'); },
+    };
+    const sections = [['stones','stairs'], ['mover','zig'], ['blink','bridge','stones']];
+    sections.forEach((sec, si) => {
+      sec.forEach(k => pieces[k]());
+      if (si < sections.length - 1){
+        gap(1.6); const p = P_(0, 3.4, 6, 1.0, '#9fe3b8', {kind:'cp', n:si + 1, h:1.0});
+        flagAt(2.6, 1.0, p.z, '#2fae6f'); MODE.cps.push({x:0, z:p.z, y:1.0});
+      }
+    });
+    gap(1.6); const fin = P_(0, 6, 10.4, 1.0, '#ffffff', {kind:'finish', h:1.0});
+    MODE.finZ = fin.z;
+    for (const sx of [-4.6, 4.6]) put(arena, M(cyl(.15,.15,4,8), '#ff5d8f', .08, true), sx, 3, fin.z);
+    const sign = signMesh(textTex('خط النهاية', {bg:'#ffc93c', fill:'#2b1a12', stroke:false, size:80}), 6, 1.5);
+    sign.position.set(0, 4.4, fin.z); arena.add(sign);
+    waterPlane(11.4, 90, .32, -4);
+  } else if (MODE.id === 'flood'){
+    MODE.noObs = true; MODE.zMin = -20.5; MODE.zMax = 20.5;
+    const tiers = [[1.2, 9, 2.4], [2.4, 7, 2.2], [3.6, 5, 2.0], [4.8, 4, 1.8], [6.0, 2, 1.7], [7.2, 1, 1.6]];
+    const cols = ['#c08a52','#ffc93c','#ff8a3d','#ff5d8f','#8a5cf5','#3a7bd5'];
+    let prev = [];
+    tiers.forEach(([top, n, s], ti) => {
+      const cur = [];
+      for (let i = 0, tries = 0; i < n && tries < 300; tries++){
+        let x, z;
+        if (!prev.length){ x = R(-4, 4); z = R(-18, 18); }
+        else { const b = prev[(rnd()*prev.length)|0], a = rnd()*Math.PI*2, r = 2.3 + rnd()*.8; x = b.x + Math.cos(a)*r; z = b.z + Math.sin(a)*r; }
+        if (Math.abs(x) > 4.2 || Math.abs(z) > 18.5) continue;
+        if (plats.some(p => Math.abs(p.x - x) < (p.w + s)/2 + .15 && Math.abs(p.z - z) < (p.d + s)/2 + .15)) continue;
+        cur.push(addPlat(x, z, s, s, top, cols[ti])); i++;
+      }
+      if (cur.length) prev = cur;
+    });
+    for (const z of [-21.3, 21.3]){ put(arena, M(box(11,.5,.2), '#ff5d8f', .04), 0, .9, z); for (let x = -5; x <= 5; x += 2.5) put(arena, M(cyl(.08,.08,1.2,6), '#ffffff', .1), x, .6, z); }
+    MODE.water = waterPlane(11.4, 42, .05, 0);
+    MODE.level = 0;
+  }
+}
+
+/* ---- start / finish ---- */
+function setNeighborsVisible(v){
+  for (const n of neighbors){ n.p.g.visible = v; n.tag.hidden = !v; n.bub.hidden = true; if (n.bubble) n.bubble.visible = v; }
+}
+function modeSpawn(){
+  Object.assign(P, {vy:0, slideT:0, stun:0, slow:0, float:0, dance:0, blind:0, air:true});
+  P.inv = 1.2;
+  if (MODE.id === 'beds'){ const s = MODE.team === 'r' ? 1 : -1; P.x = rand(-3, 3); P.z = s*39; player.g.rotation.y = s > 0 ? Math.PI : 0; }
+  else if (MODE.id === 'obby'){ const c = MODE.cps[MODE.cpi || 0]; P.x = c.x + rand(-1.5, 1.5); P.z = c.z; P.y = c.y + .3; player.g.rotation.y = Math.PI; return; }
+  else if (MODE.id === 'flood'){ P.x = rand(-4, 4); P.z = rand(-15, 15); }
+  else { P.x = rand(-4, 4); P.z = rand(-36, 36); player.g.rotation.y = Math.PI; }
+  P.y = groundY(P.x) + .4;
+}
+function startMode(d, byName){
+  const id = d.m, M_ = MODES[id];
+  if (!M_ || id === 'pranks') return;
+  if (MODE.id) clearMode();
+  if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
+  audioInit();
+  const nk = clean($('nickStart').value, 16); if (nk && nk !== myNick) setNick(nk);
+  resetGame();
+  critMeshes.forEach(m => scene.remove(m.g)); critMeshes = []; netCrit = [];
+  Object.assign(MODE, {id, ep:d.ep, t:0, dur:M_.dur, seed:d.seed|0, teams:d.teams || {}, pl:d.pl || [meId()],
+    alive:true, out:false, finished:false, score:0, hp:3, deadT:0, cdA:0, cdMax:1, best:0, cpi:0, coinT:0, ended:false, endSent:false, endIn:null,
+    noObs:false, zMin:null, zMax:null, level:0, stT:0, chk:0, surv:0,
+    st:{beds:{r:BED_HP, b:BED_HP}, walls:[], chickens:[], cid:0, spawnT:0}, pend:new Set()});
+  MODE.team = MODE.teams[meId()] || 'r';
+  setNeighborsVisible(false);
+  ['start','over','results','pause'].forEach(x => $(x).hidden = true);
+  togglePanel(null);
+  buildArena();
+  modeSpawn();
+  if (id === 'beds'){ player.ring = teamRing(MODE.team); player.g.add(player.ring); setCoins(6); }
+  $('hearts').hidden = !(id === 'beds' || id === 'balloons'); setHearts(3);
+  setScore(0);
+  G.running = true; G.paused = false;
+  $('timer').hidden = false;
+  toast((byName ? byName + ' بدأ ' : 'بدأت ') + '«' + M_.name + '»!', 'good', 3);
+  if (id === 'beds') setTimeout(() => toast('إنت في الفريق ' + TEAM_NAME[MODE.team] + ' ' + TEAM_ICO[MODE.team], 'good', 3.5), 600);
+  sfx('whistle'); presenceDirty = true;
+}
+function clearMode(){
+  for (const c of [...arena.children]) arena.remove(c);
+  plats = []; chickMeshes.clear(); wallPlats.clear();
+  if (MODE.bedTags){ Object.values(MODE.bedTags).forEach(t => t.remove()); MODE.bedTags = null; }
+  if (player.ring){ player.g.remove(player.ring); player.ring = null; }
+  for (const av of avatars.values()) if (av.ring){ av.p.g.remove(av.ring); av.ring = null; }
+  Object.assign(MODE, {id:null, ep:0, noObs:false, zMin:null, zMax:null, alive:true, out:false, finished:false, water:null});
+  setNeighborsVisible(true);
+  $('hearts').hidden = false; setHearts(3);
+  $('menuBtn').hidden = false; $('menuBtn').textContent = '🎒 المقالب';
+  $('timer').hidden = true; refreshMenu();
+  presenceDirty = true;
+}
+function finishMode(d){
+  if (!MODE.id || MODE.ended) return;
+  MODE.ended = true; G.running = false; $('timer').hidden = true;
+  const rows = (Array.isArray(d.rows) ? d.rows : []).slice(0, 12).filter(Array.isArray)
+    .map(r => ({name:clean(String(r[0] || ''), 16) || 'لاعب', sc:clean(String(r[1] ?? ''), 16), me:r[2] === meId()}));
+  let title = clean(String(d.title || ''), 40) || 'التحدي خلص!';
+  if (MODE.id === 'beds' && (d.win === 'r' || d.win === 'b')) title = d.win === MODE.team ? 'فريقك كسب! 🏆' : 'الفريق ' + TEAM_NAME[d.win] + ' كسب!';
+  else if (rows.length > 1 && rows[0].me) title = 'إنت الكسبان! 🏆';
+  sfx('score');
+  setTimeout(() => {
+    fillList($('resList'), rows);
+    $('resTitle').textContent = title;
+    $('results').hidden = false;
+    clearMode();
+  }, 1300);
+}
+function requestMode(id){
+  const M_ = MODES[id];
+  if (!M_ || MODE.id || MATCH.on) return;
+  if (id === 'pranks') return requestMatch();
+  const pl = [meId(), ...[...avatars.values()].filter(a => !a.mi).map(a => a.peer)];
+  if (pl.length < M_.min){ toast('«' + M_.name + '» محتاج ' + M_.min + ' لاعبين على الأقل', 'warn', 3); return; }
+  const teams = {};
+  if (id === 'beds') pl.slice().sort(() => Math.random() - .5).forEach((p, i) => teams[p] = i % 2 ? 'b' : 'r');
+  const d = {k:'mstart', m:id, ep:Date.now(), seed:(Math.random()*1e9)|0, teams, pl};
+  shareAct(d); startMode(d, null);
+}
+function onModeStart(d, from, who){
+  if (!MODES[d.m] || d.m === 'pranks' || !(+d.ep > (MODE.ep || 0))) return;
+  const pl = Array.isArray(d.pl) ? d.pl.filter(x => typeof x === 'string').slice(0, 16) : [];
+  if (!pl.includes(meId())) return;
+  const teams = {};
+  if (d.teams && typeof d.teams === 'object') for (const k of Object.keys(d.teams).slice(0, 16)) if (d.teams[k] === 'r' || d.teams[k] === 'b') teams[k] = d.teams[k];
+  startMode({m:d.m, ep:+d.ep, seed:d.seed|0, teams, pl}, who);
+}
+
+/* ---- who's playing, who's in charge ---- */
+function modeAvatars(){ return [...avatars.values()].filter(a => a.mi === MODE.ep && MODE.pl.includes(a.peer)); }
+function modeHostId(){ return [meId(), ...modeAvatars().map(a => a.peer)].sort()[0]; }
+const isModeHost = () => modeHostId() === meId();
+function myModeScore(){
+  switch (MODE.id){
+    case 'balloons': return {ms:MODE.score, md:MODE.score + ' 💥'};
+    case 'chickens': return {ms:MODE.score, md:MODE.score + ' 🐔'};
+    case 'beds': return {ms:MODE.score, md:TEAM_ICO[MODE.team] + ' ' + MODE.score + ' 💥'};
+    case 'flood': { const s = MODE.out ? MODE.surv : Math.floor(MODE.t); return {ms:s, md:s + 'ث ' + (MODE.out ? '🌊' : '✋')}; }
+    case 'obby': return MODE.finished ? {ms:5000 + Math.max(0, 3000 - Math.round(MODE.ft*10)), md:'⏱ ' + fmtT(MODE.ft)}
+                                      : {ms:Math.round(MODE.best*100), md:Math.round(MODE.best*100) + '%'};
+  }
+  return {ms:0, md:''};
+}
+function modeRows(){
+  const rows = [Object.assign({id:meId(), name:myNick, team:MODE.team, out:MODE.out, fin:MODE.finished}, myModeScore())];
+  for (const av of modeAvatars()) rows.push({id:av.peer, name:av.name, ms:av.ms || 0, md:av.md || String(av.ms || 0), team:MODE.teams[av.peer], out:!!av.mo, fin:!!av.mf});
+  return rows;
+}
+function modeTarget(range){
+  let best = null, bd = range;
+  for (const av of modeAvatars()){
+    if (av.ma === 0 || av.immune > 0) continue;
+    if (MODE.id === 'beds' && MODE.teams[av.peer] === MODE.team) continue;
+    const d = Math.hypot(av.x - P.x, av.z - P.z);
+    if (d < bd){ bd = d; best = av; }
+  }
+  return best;
+}
+
+/* ---- hits, knock-outs ---- */
+function modeAttack(kind, av){
+  player.g.rotation.y = Math.atan2(av.x - P.x, av.z - P.z);
+  shareAct({k:kind, to:av.peer});
+  av.immune = .45; P.throwT = .35;
+  pvpVisual(kind, P, av, () => hitFx(kind, av));
+}
+function modeOnHit(kind, who, from){
+  if (!G.running || !MODE.alive || P.pvpInv > 0) return;
+  P.pvpInv = .9;
+  if (MODE.id === 'chickens'){ if (kind === 'slipper'){ P.stun = 1.4; P.fx = 'dizzy'; toast(who + ' دوّخك بالشبشب!', 'warn', 1.5); } return; }
+  if (MODE.id === 'beds' || MODE.id === 'balloons'){
+    MODE.hp--; setHearts(MODE.hp); P.slow = .7; shake = .2;
+    if (MODE.hp <= 0) modeKO(from, who); else toast(who + ' رشّك! فاضلك ' + MODE.hp, 'warn', 1.2);
+  }
+}
+function modeKO(from, who){
+  MODE.alive = false; MODE.deadT = MODE.id === 'beds' ? 3 : 2.5;
+  burst(new THREE.Vector3(P.x, P.y + 1.5, P.z), 22, ['#5fb8ff','#9fd8ff','#ffffff'], {size:.14, speed:4, up:6});
+  sfx('caught'); shake = .35;
+  if (from) shareAct({k:'mko', ep:MODE.ep, by:from});
+  if (MODE.id === 'beds' && MODE.st.beds[MODE.team] <= 0){ MODE.out = true; toast('وقعت وسريرك متكسر… خرجت من الجولة', 'warn', 3.5); }
+  else toast((who ? who + ' وقّعك! ' : 'وقعت! ') + 'هترجع بعد ' + Math.ceil(MODE.deadT) + ' ثواني', 'warn', 2.2);
+  presenceDirty = true;
+}
+function onModeKO(d, who, from){
+  if (d.ep !== MODE.ep || d.by !== meId() || !G.running) return;
+  MODE.score++; setScore(MODE.score);
+  if (MODE.id === 'beds') setCoins(G.coins + 5);
+  toast('وقّعت ' + who + '! 💥', 'good', 1.8); sfx('score');
+  if (from) pop('💥', vpos(from, 3), '#ffc93c', 1.3);
+}
+
+/* ---- beds and walls ---- */
+function bedDist(x, z, t){ const dx = Math.max(0, Math.abs(x) - .8), dz = Math.max(0, Math.abs(z - BED_Z[t]) - 1.2); return Math.hypot(dx, dz); }
+const enemyOf = t => t === 'r' ? 'b' : 'r';
+function enemyBedNear(){ const t = enemyOf(MODE.team); return MODE.st.beds[t] > 0 && bedDist(P.x, P.z, t) < 1.15 ? t : null; }
+function enemyWallNear(){
+  let best = null, bd = 1.5;
+  for (const w of MODE.st.walls){
+    if (w.t === MODE.team) continue;
+    const d = Math.max(0, Math.hypot(w.x - P.x, w.z - P.z) - .75);
+    if (d < bd && Math.abs((w.lv*1.5 + .75) - (P.y + .8)) < 1.6){ bd = d; best = w; }
+  }
+  return best;
+}
+function hitBed(t){
+  sfx('boink'); burst(new THREE.Vector3(0, 1, BED_Z[t]), 8, ['#ffffff', TEAM_COL[t]], {cube:true, size:.1, speed:2.5, up:4});
+  pop('طاخ!', new THREE.Vector3(0, 2.4, BED_Z[t]), '#ffc93c', 1.1, false);
+  if (isModeHost()) hostBedHit(t, meId()); else shareAct({k:'bedhit', ep:MODE.ep, t});
+}
+function hostBedHit(t, by){
+  const team = by === meId() ? MODE.team : MODE.teams[by];
+  if (!team || team === t || MODE.st.beds[t] <= 0) return;
+  const prev = Object.assign({}, MODE.st.beds);
+  MODE.st.beds[t]--; MODE.stT = 0; onBeds(prev);
+}
+function onBeds(prev){
+  for (const t of ['r','b']){
+    const now = MODE.st.beds[t];
+    if (prev[t] > 0 && now <= 0){
+      const b = MODE.beds && MODE.beds[t];
+      if (b){ b.userData.mat.visible = false; b.userData.pil.visible = false; b.rotation.z = .25; }
+      burst(new THREE.Vector3(0, 1, BED_Z[t]), 30, [TEAM_COL[t], '#ffffff', '#7a4b2a'], {cube:true, size:.16, speed:5, up:7});
+      sfx('crash'); shake = .3;
+      toast(t === MODE.team ? 'سريرك اتكسر! 💥 لو وقعت مش هترجع' : 'كسرتوا سرير الفريق ' + TEAM_NAME[t] + '! 💥', t === MODE.team ? 'warn' : 'good', 3.5);
+    } else if (now < prev[t] && MODE.beds && MODE.beds[t]){ MODE.beds[t].userData.mat.scale.y = .6 + .4*now/BED_HP; }
+  }
+}
+function placeWall(){
+  if (!G.running || !MODE.alive || MODE.id !== 'beds') return;
+  if (G.coins < WALL_COST){ toast('محتاج ' + WALL_COST + ' عملات للحيطة', 'warn', 1.5); sfx('nope'); return; }
+  const r = player.g.rotation.y;
+  const x = clamp(Math.round((P.x + Math.sin(r)*1.8)/1.5)*1.5, -4.5, 4.5), z = clamp(Math.round((P.z + Math.cos(r)*1.8)/1.5)*1.5, -46.5, 46.5);
+  if (bedDist(x, z, 'r') < .9 || bedDist(x, z, 'b') < .9){ toast('ماينفعش تبني على السرير', 'warn', 1.3); return; }
+  const same = MODE.st.walls.filter(o => o.x === x && o.z === z);
+  if (same.length >= 2){ toast('الحيطة دي عالية كفاية', 'warn', 1.3); return; }
+  if (MODE.st.walls.length >= 50){ toast('كفاية حيطان!', 'warn', 1.3); return; }
+  setCoins(G.coins - WALL_COST); sfx('land');
+  const w = {id:rid(), x, z, t:MODE.team, lv:same.length, hp:3};
+  burst(new THREE.Vector3(x, w.lv*1.5 + .8, z), 8, '#e9d9bd', {size:.2, speed:1.5, up:2, grav:0, grow:1.5, life:.5});
+  if (isModeHost()){ MODE.st.walls.push(w); MODE.stT = 0; }
+  else { w.at = performance.now(); MODE.st.walls.push(w); shareAct({k:'wall', ep:MODE.ep, id:w.id, x, z}); }
+}
+function hostWall(d, by){
+  const st = MODE.st, team = MODE.teams[by];
+  if (!team || st.walls.length >= 50 || st.walls.some(w => w.id === String(d.id))) return;
+  const x = clamp(Math.round((+d.x || 0)/1.5)*1.5, -4.5, 4.5), z = clamp(Math.round((+d.z || 0)/1.5)*1.5, -46.5, 46.5);
+  if (bedDist(x, z, 'r') < .9 || bedDist(x, z, 'b') < .9) return;
+  const same = st.walls.filter(o => o.x === x && o.z === z);
+  if (same.length >= 2) return;
+  st.walls.push({id:String(d.id).slice(0, 12), x, z, t:team, lv:same.length, hp:3}); MODE.stT = 0;
+}
+function hitWall(w){
+  sfx('boink'); burst(new THREE.Vector3(w.x, w.lv*1.5 + .8, w.z), 6, ['#c08a52','#e9d9bd'], {cube:true, size:.12, speed:2, up:3});
+  if (isModeHost()) hostWallHit(w.id, meId()); else shareAct({k:'wallhit', ep:MODE.ep, id:w.id});
+}
+function hostWallHit(id, by){
+  const st = MODE.st, i = st.walls.findIndex(w => w.id === id), team = by === meId() ? MODE.team : MODE.teams[by];
+  if (i < 0 || !team || st.walls[i].t === team) return;
+  if (--st.walls[i].hp <= 0){
+    const w = st.walls[i];
+    st.walls = st.walls.filter(o => o !== w && !(o.x === w.x && o.z === w.z && o.lv > w.lv));
+  }
+  MODE.stT = 0;
+}
+function syncWallPlats(){
+  const seen = new Set();
+  for (const w of MODE.st.walls){
+    seen.add(w.id);
+    let p = wallPlats.get(w.id);
+    const col = shade(TEAM_COL[w.t], w.hp >= 3 ? .18 : w.hp === 2 ? .05 : -.1);
+    if (!p){ p = addPlat(w.x, w.z, 1.5, 1.5, (w.lv + 1)*1.5, col, {h:1.5, wall:w.id}); p.col = col; wallPlats.set(w.id, p); }
+    else if (p.col !== col){ p.col = col; p.m.material = toon(col); }
+  }
+  for (const [id, p] of wallPlats) if (!seen.has(id)){ dropPlat(p); wallPlats.delete(id); }
+}
+
+/* ---- chickens ---- */
+function hostChickens(dt){
+  const st = MODE.st;
+  st.spawnT -= dt;
+  if (st.chickens.length < 9 && st.spawnT <= 0){
+    st.spawnT = .9; st.cid = (st.cid || 0) + 1;
+    st.chickens.push({id:st.cid, x:rand(-4, 4), z:rand(-40, 40), g:st.cid % 5 === 0 ? 1 : 0, re:0});
+  }
+  const people = [];
+  if (MODE.alive) people.push({x:P.x, z:P.z});
+  for (const av of modeAvatars()) people.push({x:av.x, z:av.z});
+  for (const c of st.chickens){
+    c.re = (c.re || 0) - dt;
+    let near = null, nd = 4.5;
+    for (const q of people){ const d = Math.hypot(q.x - c.x, q.z - c.z); if (d < nd){ nd = d; near = q; } }
+    let sp = 2.2;
+    if (near){ const dx = c.x - near.x, dz = c.z - near.z, l = Math.hypot(dx, dz) || 1; c.tx = c.x + dx/l*4; c.tz = c.z + dz/l*4; sp = c.g ? 6.4 : 5.6; }
+    else if (c.tx == null || c.re <= 0 || Math.hypot(c.tx - c.x, c.tz - c.z) < .5){ c.re = rand(1.5, 3); c.tx = rand(-4.4, 4.4); c.tz = clamp(c.z + rand(-7, 7), -L+2, L-2); }
+    const dx = c.tx - c.x, dz = c.tz - c.z, d = Math.hypot(dx, dz);
+    if (d > .05){ c.x += dx/d*Math.min(d, sp*dt); c.z += dz/d*Math.min(d, sp*dt); }
+    c.x = clamp(c.x, -4.6, 4.6); c.z = clamp(c.z, -L+2, L-2);
+    if (Math.abs(c.x) >= 4.55) c.tx = -c.tx * .5;
+  }
+}
+function renderChickens(dt){
+  const seen = new Set();
+  for (const c of MODE.st.chickens){
+    if (MODE.pend.has(c.id)) continue;
+    seen.add(c.id);
+    let m = chickMeshes.get(c.id);
+    if (!m){ const g = chickenMesh(); if (c.g) goldify(g); g.position.set(c.x, 0, c.z); arena.add(g); m = {g, x:c.x, z:c.z}; chickMeshes.set(c.id, m); }
+    const f = Math.min(1, dt*10), px = m.x, pz = m.z;
+    m.x += (c.x - m.x)*f; m.z += (c.z - m.z)*f;
+    if (Math.hypot(m.x - px, m.z - pz) > .003) turnTo(m.g, m.x - px, m.z - pz, dt, 14);
+    m.g.position.set(m.x, groundY(m.x) + Math.abs(Math.sin(clock*18 + c.id))*.12, m.z);
+    if (m.g.userData.wings) m.g.userData.wings.forEach((w, j) => w.rotation.z = (j ? -1 : 1)*(.3 + Math.sin(clock*30 + c.id)*.5));
+    if (MODE.alive && G.running && P.stun <= 0 && P.y < groundY(P.x) + 1.4 && Math.hypot(m.x - P.x, m.z - P.z) < 1.05){
+      if (isModeHost()) hostCatch(c.id, meId());
+      else { MODE.pend.add(c.id); shareAct({k:'catch', ep:MODE.ep, id:c.id}); sfx('cluck'); burst(new THREE.Vector3(m.x, .7, m.z), 8, '#ffffff', {size:.08, speed:2, up:3, grav:4, life:.9}); }
+    }
+  }
+  for (const [id, m] of chickMeshes) if (!seen.has(id)){ arena.remove(m.g); chickMeshes.delete(id); }
+}
+function hostCatch(id, by){
+  const st = MODE.st, i = st.chickens.findIndex(c => c.id === id);
+  if (i < 0) return;
+  const c = st.chickens.splice(i, 1)[0];
+  const d = {k:'caught', ep:MODE.ep, id, by, g:c.g, x:r2(c.x), z:r2(c.z)};
+  shareAct(d); onCaught(d); MODE.stT = 0;
+}
+function onCaught(d){
+  if (d.ep !== MODE.ep) return;
+  MODE.pend.delete(d.id);
+  MODE.st.chickens = MODE.st.chickens.filter(c => c.id !== d.id);
+  const pos = new THREE.Vector3(clamp(+d.x || 0, -5, 5), .8, clamp(+d.z || 0, -L, L));
+  burst(pos, 14, d.g ? ['#ffd34d','#ffffff'] : ['#ffffff','#f2f2f2'], {size:.09, speed:2.5, up:4, grav:4, life:1.1});
+  if (d.by === meId()){
+    const pts = d.g ? 3 : 1; MODE.score += pts; setScore(MODE.score);
+    sfx('cluck'); setTimeout(() => sfx('coin'), 120);
+    pop('+' + pts, pos.clone().setY(2.4), d.g ? '#ffd34d' : '#9fe3b8', 1.2, false);
+    if (d.g) toast('فرخة دهبي! +3 🐔', 'good', 1.5);
+  }
+}
+
+/* ---- main button + build button ---- */
+function modeAction(){
+  if (!G.running || G.paused || !MODE.alive || MODE.cdA > 0) return;
+  const id = MODE.id;
+  if (id === 'obby'){ modeSpawn(); toast('رجعت لآخر علامة', '', 1.2); return; }
+  if (id === 'beds'){
+    const eb = enemyBedNear(); if (eb){ MODE.cdA = MODE.cdMax = .45; return hitBed(eb); }
+    const w = enemyWallNear(); if (w){ MODE.cdA = MODE.cdMax = .45; return hitWall(w); }
+  }
+  const range = id === 'flood' ? 2.6 : id === 'chickens' ? 9 : 10;
+  const av = modeTarget(range);
+  if (!av){ toast(id === 'flood' ? 'قرّب من حد عشان تزقّه' : 'مفيش حد في مرماك', 'warn', 1); sfx('nope'); return; }
+  if (id === 'flood'){
+    MODE.cdA = MODE.cdMax = 1.2; player.g.rotation.y = Math.atan2(av.x - P.x, av.z - P.z); P.throwT = .35;
+    shareAct({k:'push', ep:MODE.ep, to:av.peer, x:r2(av.x - P.x), z:r2(av.z - P.z)}); sfx('boink'); pop('زقّة!', vpos(av, 3), '#ffc93c', 1.1, false);
+  } else if (id === 'chickens'){ MODE.cdA = MODE.cdMax = 3; modeAttack('slipper', av); }
+  else { MODE.cdA = MODE.cdMax = id === 'beds' ? .9 : .75; modeAttack('balloon', av); }
+}
+function modeAction2(){ if (MODE.id === 'beds') placeWall(); }
+let btnState = '';
+function modeButtons(){
+  targetRing.visible = doorRing.visible = false;
+  let ico = '❓', nm = '', ok = MODE.alive && G.running, tgt = null;
+  switch (MODE.id){
+    case 'beds': {
+      if (enemyBedNear()){ ico = '🔨'; nm = 'اكسر السرير'; }
+      else if (enemyWallNear()){ ico = '🔨'; nm = 'اكسر الحيطة'; }
+      else { ico = '💦'; nm = 'بالونة'; tgt = modeTarget(10); ok = ok && !!tgt; }
+      break;
+    }
+    case 'balloons': ico = '💦'; nm = 'بالونة'; tgt = modeTarget(10); ok = ok && !!tgt; break;
+    case 'chickens': ico = '🩴'; nm = 'شبشب'; tgt = modeTarget(9); ok = ok && !!tgt; break;
+    case 'flood': ico = '👐'; nm = 'زقّة'; tgt = modeTarget(2.6); ok = ok && !!tgt; break;
+    case 'obby': ico = '↩️'; nm = 'ارجع للعلامة'; break;
+  }
+  const key = ico + nm + (MODE.id === 'beds' ? G.coins : '');
+  if (key !== btnState){
+    btnState = key;
+    $('prankIco').textContent = ico; $('prankName').textContent = nm;
+    $('menuBtn').hidden = MODE.id !== 'beds';
+    $('menuBtn').textContent = '🧱 حيطة (' + WALL_COST + ')';
+  }
+  const cdv = MODE.cdA > 0 ? MODE.cdA/MODE.cdMax : 0;
+  $('prank').classList.toggle('dim', !ok || cdv > 0);
+  $('prank').style.setProperty('--cd', cdv.toFixed(3));
+  if (tgt){ targetRing.visible = true; targetRing.position.set(tgt.x, (tgt.y || groundY(tgt.x)) + .04, tgt.z); targetRing.material.color.set(0xff5d8f);
+    const s = 1 + Math.sin(clock*8)*.08; targetRing.scale.set(s, s, s); }
+}
+function modeInfo(){
+  const bed = t => MODE.st.beds[t] > 0 ? '🛏️' + MODE.st.beds[t] : '💥';
+  switch (MODE.id){
+    case 'beds': return TEAM_ICO.r + ' ' + bed('r') + ' · ' + TEAM_ICO.b + ' ' + bed('b') + ' · فريقك ' + TEAM_ICO[MODE.team];
+    case 'balloons': return '💥 وقّعت ' + MODE.score;
+    case 'obby': return MODE.finished ? '🏁 وصلت! ' + fmtT(MODE.ft) : '🏁 ' + Math.round(MODE.best*100) + '% · علامة ' + (MODE.cpi || 0) + '/' + (MODE.cps.length - 1);
+    case 'flood': return '🌊 الميه ' + MODE.level.toFixed(1) + 'م' + (MODE.out ? ' · غرقت' : '');
+    case 'chickens': return '🐔 مسكت ' + MODE.score;
+  }
+  return '';
+}
+
+/* ---- per-frame ---- */
+function modeFrame(dt, rdt){
+  if (!MODE.id) return;
+  updatePlats();
+  if (MODE.id === 'beds') syncWallPlats();
+  if (MODE.id === 'chickens') renderChickens(rdt);
+  if (MODE.bedTags) for (const t of ['r','b']){
+    const tag = MODE.bedTags[t];
+    tag.textContent = TEAM_ICO[t] + ' ' + (MODE.st.beds[t] > 0 ? '🛏️ ' + MODE.st.beds[t] : 'متكسر');
+    placeEl(tag, {x:0, y:0, z:BED_Z[t]}, 2.2);
+  }
+  for (const av of avatars.values()){
+    const tm = MODE.id === 'beds' && av.mi === MODE.ep ? MODE.teams[av.peer] : null;
+    if (tm && !av.ring){ av.ring = teamRing(tm); av.p.g.add(av.ring); }
+  }
+  if (dt <= 0 || MODE.ended) return;
+  MODE.t += dt;
+  $('timer').textContent = fmtT(Math.max(0, MODE.dur - MODE.t));
+  if (MODE.cdA > 0) MODE.cdA -= dt;
+  // dead → respawn
+  if (!MODE.alive && !MODE.out && MODE.deadT > 0){
+    MODE.deadT -= dt;
+    if (MODE.deadT <= 0){
+      if (MODE.id === 'beds' && MODE.st.beds[MODE.team] <= 0){ MODE.out = true; toast('سريرك متكسر… خرجت من الجولة', 'warn', 3); }
+      else { MODE.alive = true; MODE.hp = 3; setHearts(3); modeSpawn(); sfx('jump'); }
+      presenceDirty = true;
+    }
+  }
+  if (MODE.id === 'beds' && MODE.alive){ MODE.coinT += dt; if (MODE.coinT >= 1.5){ MODE.coinT = 0; setCoins(G.coins + 1); } }
+  if (MODE.id === 'obby' && MODE.alive && !MODE.finished){
+    MODE.best = Math.max(MODE.best, clamp((41.5 - P.z)/(41.5 - MODE.finZ), 0, .99)); setScore(Math.round(MODE.best*100));
+    const on = P.on;
+    if (on && on.kind === 'cp' && on.n > MODE.cpi){ MODE.cpi = on.n; toast('علامة ' + on.n + ' ✓', 'good', 1.4); sfx('coin'); burst(new THREE.Vector3(P.x, P.y + 1, P.z), 14, ['#2fae6f','#ffffff','#ffc93c'], {cube:true, size:.1, speed:3, up:5}); }
+    if (on && on.kind === 'finish'){
+      MODE.finished = true; MODE.ft = MODE.t; MODE.best = 1; setScore(100); presenceDirty = true;
+      toast('وصلت! ⏱ ' + fmtT(MODE.ft), 'good', 3); sfx('score');
+      for (let i = 0; i < 4; i++) setTimeout(() => burst(new THREE.Vector3(P.x + rand(-2, 2), P.y + 2, P.z + rand(-2, 2)), 16, ['#ff5d8f','#ffc93c','#3a7bd5','#2fae6f'], {cube:true, size:.12, speed:3, up:6, grav:8, life:1.4}), i*200);
+    }
+    if (P.z < 38 && P.y < .45){
+      burst(new THREE.Vector3(P.x, .4, P.z), 18, ['#5fb8ff','#ffffff'], {size:.12, speed:3, up:5}); sfx('splash');
+      toast('وقعت في الميه! 💦', 'warn', 1.3); modeSpawn();
+    }
+  }
+  if (MODE.id === 'flood'){
+    MODE.level = clamp((MODE.t - 10)*.05, 0, 7.8);
+    if (MODE.water){ MODE.water.position.y = Math.max(.05, MODE.level); }
+    if (MODE.alive){
+      setScore(Math.floor(MODE.t));
+      if (P.y < MODE.level - .35){
+        MODE.alive = false; MODE.out = true; MODE.surv = Math.floor(MODE.t); presenceDirty = true;
+        burst(new THREE.Vector3(P.x, MODE.level, P.z), 24, ['#5fb8ff','#ffffff'], {size:.14, speed:3, up:5}); sfx('splash');
+        toast('غرقت! 🌊 فضلت ' + MODE.surv + ' ثانية', 'warn', 3);
+      }
+    }
+  }
+  if (isModeHost() && MODE.t > .6) hostModeTick(dt);
+  else if (MODE.t > MODE.dur + 8) finishMode({title:'التحدي خلص!', rows:modeRows().sort((a, b) => b.ms - a.ms).map(r => [r.name, r.md, r.id])});
+}
+function bedWinner(final){
+  const st = MODE.st, rows = modeRows();
+  const alive = t => rows.some(r => r.team === t && !r.out);
+  const rD = st.beds.r <= 0 && !alive('r'), bD = st.beds.b <= 0 && !alive('b');
+  if (rD && !bD) return 'b';
+  if (bD && !rD) return 'r';
+  if (!final) return null;
+  if (st.beds.r !== st.beds.b) return st.beds.r > st.beds.b ? 'r' : 'b';
+  const k = t => rows.filter(r => r.team === t).reduce((s, r) => s + r.ms, 0);
+  return k('r') === k('b') ? null : (k('r') > k('b') ? 'r' : 'b');
+}
+function hostModeTick(dt){
+  if (MODE.id === 'chickens') hostChickens(dt);
+  if (MODE.t >= MODE.dur) return hostEnd();
+  MODE.chk -= dt;
+  if (MODE.chk <= 0){
+    MODE.chk = .5;
+    const rows = modeRows();
+    if (MODE.id === 'beds' && bedWinner(false)) return hostEnd();
+    if (MODE.id === 'flood' && MODE.endIn == null){ const a = rows.filter(r => !r.out).length; if (rows.length > 1 ? a <= 1 : a === 0) MODE.endIn = 1.5; }
+    if (MODE.id === 'obby' && MODE.endIn == null && rows.every(r => r.fin)) MODE.endIn = 2;
+  }
+  if (MODE.endIn != null){ MODE.endIn -= dt; if (MODE.endIn <= 0) return hostEnd(); }
+  MODE.stT -= dt;
+  if (MODE.stT <= 0){
+    MODE.stT = MODE.id === 'chickens' ? .1 : .25;
+    const d = {k:'mst', ep:MODE.ep};
+    if (MODE.id === 'beds'){ d.b = [MODE.st.beds.r, MODE.st.beds.b]; d.w = MODE.st.walls.map(w => [w.id, w.x, w.z, w.t === 'r' ? 0 : 1, w.lv, w.hp]); }
+    if (MODE.id === 'chickens') d.c = MODE.st.chickens.map(c => [c.id, r2(c.x), r2(c.z), c.g]);
+    if (d.b || d.c) shareAct(d);
+  }
+}
+function hostEnd(){
+  if (MODE.endSent || MODE.ended) return;
+  MODE.endSent = true;
+  const rows = modeRows();
+  let title = 'التحدي خلص!', win = null;
+  if (MODE.id === 'beds'){
+    win = bedWinner(true);
+    title = win ? 'الفريق ' + TEAM_NAME[win] + ' كسب!' : 'تعادل!';
+    rows.sort((a, b) => ((b.team === win) - (a.team === win)) || b.ms - a.ms);
+  } else {
+    rows.sort((a, b) => b.ms - a.ms);
+    if (rows.length > 1) title = rows[0].name + ' كسب!';
+  }
+  const d = {k:'mend', ep:MODE.ep, title, win, rows:rows.map(r => [r.name, r.md, r.id])};
+  shareAct(d); finishMode(d);
+}
+function onModeMsg(k, d, msg, from, who){
+  if (k === 'mstart') return onModeStart(d, msg.peer, who);
+  if (!MODE.id || d.ep !== MODE.ep) return;
+  const host = isModeHost(), fromIn = !!from && from.mi === MODE.ep;
+  switch (k){
+    case 'mst':
+      if (msg.peer !== modeHostId()) return;
+      if (msg.peer === hostId) lastNbAt = performance.now();
+      if (Array.isArray(d.b)){ const prev = Object.assign({}, MODE.st.beds); MODE.st.beds = {r:clamp(d.b[0]|0, 0, BED_HP), b:clamp(d.b[1]|0, 0, BED_HP)}; onBeds(prev); }
+      if (Array.isArray(d.w)){
+        const list = d.w.slice(0, 60).filter(Array.isArray).map(a => ({id:String(a[0]).slice(0, 12), x:clamp(+a[1] || 0, -4.5, 4.5), z:clamp(+a[2] || 0, -47, 47), t:a[3] ? 'b' : 'r', lv:clamp(a[4]|0, 0, 1), hp:clamp(a[5]|0, 1, 3)}));
+        const ids = new Set(list.map(w => w.id)), now = performance.now();
+        MODE.st.walls = list.concat(MODE.st.walls.filter(w => w.at && !ids.has(w.id) && now - w.at < 2500));
+      }
+      if (Array.isArray(d.c)){
+        MODE.st.chickens = d.c.slice(0, 20).filter(Array.isArray).map(a => ({id:a[0]|0, x:clamp(+a[1] || 0, -5, 5), z:clamp(+a[2] || 0, -L, L), g:a[3] ? 1 : 0}));
+        const ids = new Set(MODE.st.chickens.map(c => c.id));
+        for (const id of [...MODE.pend]) if (!ids.has(id)) MODE.pend.delete(id);
+      }
+      break;
+    case 'mend': if (msg.peer === modeHostId() || !host) finishMode(d); break;
+    case 'mko': onModeKO(d, who, from); break;
+    case 'bedhit': if (host && fromIn && (d.t === 'r' || d.t === 'b')) hostBedHit(d.t, msg.peer); break;
+    case 'wall': if (host && fromIn) hostWall(d, msg.peer); break;
+    case 'wallhit': if (host && fromIn) hostWallHit(String(d.id || ''), msg.peer); break;
+    case 'catch': if (host && fromIn) hostCatch(d.id|0, msg.peer); break;
+    case 'caught': if (msg.peer === modeHostId()) onCaught(d); break;
+    case 'push':
+      if (d.to === meId() && MODE.alive && G.running){
+        const l = Math.hypot(+d.x || 0, +d.z || 0) || 1;
+        P.slide = {x:(+d.x || 0)/l*10, z:(+d.z || 0)/l*10}; P.slideT = .5; P.vy = 6; P.air = true; shake = .2;
+        toast(who + ' زقّك!', 'warn', 1); sfx('boink');
+      }
+      break;
+  }
+}
+
+/* ---- picker in the 🎮 panel ---- */
+(() => {
+  const grid = $('modeGrid');
+  for (const id of Object.keys(MODES)){
+    const M_ = MODES[id], b = document.createElement('button');
+    b.type = 'button'; b.className = 'md'; b.dataset.id = id;
+    const i = document.createElement('span'); i.className = 'i'; i.textContent = M_.icon;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = M_.name;
+    const s = document.createElement('span'); s.className = 'd'; s.textContent = M_.short;
+    const p = document.createElement('span'); p.className = 'p'; p.textContent = M_.min > 1 ? M_.min + '+ لاعبين' : 'لوحدك أو مع صحابك';
+    b.append(i, n, s, p);
+    b.addEventListener('click', () => { modeSel = id; renderBoard(); });
+    grid.appendChild(b);
+  }
+})();
+
 /* scoreboard + timed match */
 function boardRows(){
+  if (MODE.id) return modeRows().sort((a, b) => b.ms - a.ms).map(r => ({name:r.name, sc:r.md, me:r.id === meId()}));
   const rows = [{name:myNick, sc:G.score, me:true}];
   for (const av of avatars.values()) rows.push({name:av.name, sc:av.sc, me:false});
   return rows.sort((a,b) => b.sc - a.sc);
@@ -2408,16 +3113,20 @@ function fillList(ol, rows){
 }
 function renderBoard(){
   const rows = boardRows(), mini = $('mini');
-  mini.hidden = rows.length < 2;
-  if (rows.length >= 2) mini.textContent = '🏆 ' + rows.slice(0,3).map((r,i) => (i+1) + '. ' + (r.me ? 'إنت' : r.name) + ' ' + r.sc).join(' · ');
+  if (MODE.id){ mini.hidden = false; mini.textContent = modeInfo(); }
+  else {
+    mini.hidden = rows.length < 2;
+    if (rows.length >= 2) mini.textContent = '🏆 ' + rows.slice(0,3).map((r,i) => (i+1) + '. ' + (r.me ? 'إنت' : r.name) + ' ' + r.sc).join(' · ');
+  }
   if (openPanel !== 'board') return;
   fillList($('boardList'), rows);
-  const live = !!(room && chatState.live);
-  $('matchBtn').disabled = !live || MATCH.on;
-  $('matchBtn').textContent = MATCH.on ? 'فيه تحدّي شغال دلوقتي' : 'ابدأ تحدّي ٣ دقايق';
-  $('boardNote').textContent = !live ? 'اللعب ضد بعض بيشتغل لما تكون متصل بالحارة. الوضع ده مش متصل دلوقتي.'
-    : rows.length < 2 ? 'مستني لاعب تاني يفتح اللعبة. ابعتله اللينك، وأول ما يدخل هيظهر في الحارة.'
-    : 'ارمي بالونة أو شبشب على لاعب، أو سيب له فخ في طريقه. الحلقة الوردي تحت لاعب معناها إنه في مرماك.';
+  for (const b of $('modeGrid').children) b.classList.toggle('sel', b.dataset.id === modeSel);
+  const live = !!(room && chatState.live), M_ = MODES[modeSel];
+  const n = 1 + [...avatars.values()].filter(a => !a.mi).length;
+  const busy = !!MODE.id || MATCH.on, need = M_.min > n;
+  $('matchBtn').disabled = busy || need;
+  $('matchBtn').textContent = busy ? 'فيه تحدّي شغال دلوقتي' : 'ابدأ «' + M_.name + '»' + (n > 1 ? ' للكل (' + n + ')' : '');
+  $('boardNote').textContent = M_.desc + (need ? ' محتاج ' + M_.min + ' لاعبين على الأقل، ' + (live ? 'ابعت الغرفة لصاحبك.' : 'ادخلوا غرفة واحدة الأول.') : '');
 }
 function respawn(){
   setHearts(3); setScore(Math.max(0, G.score - 30));
@@ -2425,6 +3134,7 @@ function respawn(){
   toast('اتمسكت ٣ مرات! رجعت للبداية -30', 'warn', 2.5);
 }
 function startMatch(by, dur){
+  if (MODE.id) clearMode();
   audioInit();
   resetGame();
   P.x = rand(-3.5, 3.5); P.z = L - 8 - rand(0, 8);
@@ -2446,15 +3156,15 @@ function endMatch(){
   }, 900);
 }
 function requestMatch(){
-  if (!(room && chatState.live)){ toast('التحدي محتاج اتصال بالحارة', 'warn'); return; }
-  shareAct({k:'match', dur:180});
+  if (MODE.id) return;
+  if (room && chatState.live) shareAct({k:'match', dur:180});
   startMatch(null, 180);
   togglePanel(null);
 }
 $('boardBtn').addEventListener('click', () => { togglePanel('board'); renderBoard(); });
 $('boardClose').addEventListener('click', () => togglePanel(null));
-$('matchBtn').addEventListener('click', requestMatch);
-$('rematchBtn').addEventListener('click', requestMatch);
+$('matchBtn').addEventListener('click', () => requestMode(modeSel));
+$('rematchBtn').addEventListener('click', () => { $('results').hidden = true; if (!G.running) startGame(); togglePanel('board'); renderBoard(); });
 $('soloBtn').addEventListener('click', () => { $('results').hidden = true; startGame(); });
 
 /* =========================================================
@@ -2485,20 +3195,27 @@ function frame(now){
   if (keys.KeyW || keys.ArrowUp) mz -= 1;   if (keys.KeyS || keys.ArrowDown) mz += 1;
   const ml = Math.hypot(mx, mz) || 1; const mag = Math.min(1, Math.hypot(mx, mz));
   mx /= ml; mz /= ml;
-  const locked = P.stun > 0 || P.float > 0 || P.dance > 0;
+  const cdir = camDir(); mx *= cdir; mz *= cdir;
+  const locked = P.stun > 0 || P.float > 0 || P.dance > 0 || (MODE.id && !MODE.alive);
   const target = G.running && mag > .08 && !locked ? (mag > .8 ? 7.4 : mag*6) * (P.slow > 0 ? .5 : 1) : 0;
   P.speed += (target - P.speed)*Math.min(1, dt*10);
   if (G.running && dt > 0){
     if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
     if (P.slideT > 0){ P.slideT -= dt; P.x += P.slide.x*dt; P.z += P.slide.z*dt; const f = Math.pow(.2, dt); P.slide.x *= f; P.slide.z *= f; }
-    for (const o of obstacles){ const dx = P.x - o.x, dz = P.z - o.z, d = Math.hypot(dx, dz), r = o.r + .4; if (d < r && d > .001){ P.x = o.x + dx/d*r; P.z = o.z + dz/d*r; } }
+    if (!MODE.noObs && P.y < 1.2) for (const o of obstacles){ const dx = P.x - o.x, dz = P.z - o.z, d = Math.hypot(dx, dz), r = o.r + .4; if (d < r && d > .001){ P.x = o.x + dx/d*r; P.z = o.z + dz/d*r; } }
+    if (plats.length) platPush();
+    if (MODE.zMin != null) P.z = clamp(P.z, MODE.zMin, MODE.zMax);
     P.x = clamp(P.x, -WALK, WALK); P.z = clamp(P.z, -L+1, L-1);
   }
-  const gy = groundY(P.x);
+  const GA = plats.length ? groundAt(P.x, P.z, P.y) : null;
+  const gy = GA ? GA.g : groundY(P.x);
   if (P.float > 0){ P.vy = 0; P.y += (gy + 1.7 + Math.sin(clock*3)*.15 - P.y)*Math.min(1, dt*3); }
   else P.vy -= 24*dt;
   P.y += P.vy*dt;
   if (P.y <= gy){ if (P.air && P.vy < -3){ player.sq = .72; sfx('land'); burst(new THREE.Vector3(P.x, gy+.1, P.z), 6, '#eadcc3', {size:.18, speed:1.6, up:1, grav:0, grow:1.5, life:.45}); } P.y = gy; P.vy = 0; P.air = false; }
+  else if (P.y > gy + .08 && !P.air && P.float <= 0) P.air = true;
+  P.on = GA && P.y <= gy + .05 ? GA.on : null;
+  if (P.on && (P.on.dx || P.on.dz)){ P.x += P.on.dx; P.z += P.on.dz; }
   if (P.speed > 6 && !P.air){ P.dustT -= dt; if (P.dustT <= 0){ P.dustT = .16; burst(new THREE.Vector3(P.x, gy+.1, P.z), 1, '#eadcc3', {size:.16, speed:.6, up:.6, grav:0, grow:1.6, life:.4}); } }
   player.g.position.set(P.x, P.y, P.z);
   if (P.throwT > 0) P.throwT -= dt;
@@ -2507,6 +3224,7 @@ function frame(now){
   if (P.air) { player.legs[0].rotation.x = -.6; player.legs[1].rotation.x = .3; }
   setMood(player, P.stun > 0 && P.fx !== 'slip' ? 'dizzy' : (P.inv > 0 || P.float > 0 || P.blind > 0 || P.slow > 0) ? 'shock' : 'happy');
   if (P.inv > 0){ P.inv -= dt; player.g.visible = Math.floor(P.inv*12) % 2 === 0 || P.inv <= 0; } else player.g.visible = true;
+  if (MODE.id && !MODE.alive) player.g.visible = false;
   if (P.disguise > 0){ P.disguise -= dt; if (P.disguise <= 0){ player.disguise.visible = false; toast('التنكّر خلص!', 'warn'); sfx('puff'); } }
   // smoke hides the player
   P.hidden = false;
@@ -2528,15 +3246,18 @@ function frame(now){
     for (const k in cds) if (cds[k] > 0) cds[k] = Math.max(0, cds[k] - dt);
     const hostNow = isHost();
     if (hostNow !== wasHost){ wasHost = hostNow; onRoleChange(hostNow); }
-    if (hostNow){ updateNeighbors(dt); updateCritters(dt); updateCart(dt); }
+    if (MODE.id){}
+    else if (hostNow){ updateNeighbors(dt); updateCritters(dt); updateCart(dt); }
     else { updateNeighborsClient(dt); updateNetCritters(dt); }
     updateProjs(dt); updateTraps(dt);
     for (let i=floaters.length-1;i>=0;i--){ const f = floaters[i]; if (asActor(f.actor, () => f.upd(f, dt))) floaters.splice(i,1); }
     updateParts(dt); updatePops(dt);
   }
   updateAvatars(rdt);
+  modeFrame(wdt, rdt);
 
   // prank button state + target markers
+  if (MODE.id) modeButtons(); else {
   let ok = G.running ? selected.can() === true : false;
   if (G.coins < selected.cost) ok = false;
   const cdv = cds[selected.id] > 0 ? cds[selected.id]/selected.cd : 0;
@@ -2554,6 +3275,7 @@ function frame(now){
     }
     const s = 1 + Math.sin(clock*8)*.08; targetRing.scale.set(s,s,s); doorRing.scale.set(s,s,s);
   }
+  }
   if (openPanel === 'prank') refreshCooldowns();
 
   if (MATCH.on && dt > 0){
@@ -2569,19 +3291,20 @@ function frame(now){
   for (const c of clouds){ c.position.x += dt*.8; if (c.position.x > 70) c.position.x = -70; }
 
   // ---- camera ----
-  const chasing = neighbors.some(n => n.state === 'chase');
+  const chasing = !MODE.id && neighbors.some(n => n.state === 'chase');
+  const cd_ = camDir(), lift = Math.max(0, P.y - .2);
   const portrait = host.clientWidth < host.clientHeight;
   const back = (chasing ? 13 : 11) + (portrait ? 2 : 0), high = chasing ? 10 : 9;
-  camPos.lerp(v3.set(P.x*.55, high, P.z + back), Math.min(1, rdt*3.5));
+  camPos.lerp(v3.set(P.x*.55, high + lift*.8, P.z + back*cd_), Math.min(1, rdt*3.5));
   camera.position.copy(camPos);
   if (shake > 0){ shake -= rdt; camera.position.x += (Math.random()-.5)*shake; camera.position.y += (Math.random()-.5)*shake; }
   const lookAhead = Math.sin(player.g.rotation.y)*1.5;
-  camLook.lerp(v3.set(P.x*.8 + lookAhead*.5, 1.4, P.z - 3 + (portrait && openPanel ? 3 : 0)), Math.min(1, rdt*5));
+  camLook.lerp(v3.set(P.x*.8 + lookAhead*.5, 1.4 + lift*.9, P.z + (-3 + (portrait && openPanel ? 3 : 0))*cd_), Math.min(1, rdt*5));
   camera.lookAt(camLook);
-  sun.position.set(P.x + 14, 26, P.z + 8); sun.target.position.set(P.x, 0, P.z - 4);
+  sun.position.set(P.x + 14, 26 + lift, P.z + 8); sun.target.position.set(P.x, 0, P.z - 4);
 
   // ---- labels ----
-  for (const n of neighbors){
+  if (!MODE.id) for (const n of neighbors){
     const near = Math.hypot(n.x - P.x, n.z - P.z) < 16;
     n.tag.hidden = !near;
     if (near) placeEl(n.tag, n.p.g.position, 3.2);
