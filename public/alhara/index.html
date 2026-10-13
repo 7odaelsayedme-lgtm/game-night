@@ -262,6 +262,9 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
       <div class="toggle"><span>الصوت</span><button id="sndToggle">شغّال</button></div>
       <label for="vol">مستوى الصوت<input type="range" id="vol" min="0" max="1" step="0.05"></label>
       <label for="sens">حساسية الحركة<input type="range" id="sens" min="0.6" max="1.6" step="0.05"></label>
+      <div class="toggle"><span>شكل الرسم</span><button id="lookToggle">روبلوكس</button></div>
+      <div class="toggle"><span>جودة الرسم</span><button id="hqToggle">عالية</button></div>
+      <p id="gfxNote" hidden style="margin:0;font-size:14px;line-height:1.6">التغيير بيتطبق لما اللعبة تفتح من الأول. <button id="gfxApply" type="button" style="font:700 14px var(--body);border:2px solid var(--ink);border-radius:999px;padding:2px 12px;background:var(--sun);cursor:pointer">طبّق دلوقتي</button></p>
     </div>
     <div class="row"><button class="cta" id="resumeBtn">كمّل</button><button class="cta alt" id="restartBtn">ابدأ من الأول</button></div>
   </div>
@@ -302,15 +305,16 @@ const store = {
   get(k,d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
-const settings = Object.assign({sound:true, vol:0.7, sens:1}, store.get('hara-settings', {}));
+const settings = Object.assign({sound:true, vol:0.7, sens:1, look:'blocky', hq:true}, store.get('hara-settings', {}));
+const BLOCKY = settings.look !== 'toon', HQ = settings.hq !== false;
 let clock = 0;
 
 /* =========================================================
    RENDERER, SKY, LIGHT
    ========================================================= */
 const host = $('game');
-const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+const renderer = new THREE.WebGLRenderer({antialias:HQ, powerPreference:'high-performance'});
+renderer.setPixelRatio(HQ ? Math.min(devicePixelRatio || 1, 1.75) : 1);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 host.appendChild(renderer.domElement);
@@ -319,17 +323,19 @@ const scene = new THREE.Scene();
 {
   const c = document.createElement('canvas'); c.width = 2; c.height = 256;
   const x = c.getContext('2d'), g = x.createLinearGradient(0,0,0,256);
-  g.addColorStop(0,'#4fa9f0'); g.addColorStop(.55,'#9fd8ff'); g.addColorStop(1,'#ffe0b0');
+  if (BLOCKY){ g.addColorStop(0,'#2f86e6'); g.addColorStop(.5,'#7cc0f5'); g.addColorStop(1,'#d9eefc'); }
+  else { g.addColorStop(0,'#4fa9f0'); g.addColorStop(.55,'#9fd8ff'); g.addColorStop(1,'#ffe0b0'); }
   x.fillStyle = g; x.fillRect(0,0,2,256);
   scene.background = new THREE.CanvasTexture(c);
 }
-scene.fog = new THREE.Fog('#f4d9b0', 40, 95);
+scene.fog = new THREE.Fog(BLOCKY ? '#d4ebfa' : '#f4d9b0', BLOCKY ? 48 : 40, 105);
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 220);
 
-scene.add(new THREE.HemisphereLight(0xd8efff, 0xe2b27a, 0.72));
-const sun = new THREE.DirectionalLight(0xfff0d2, 0.9);
+if (BLOCKY){ scene.add(new THREE.HemisphereLight(0xeaf5ff, 0x8d7a5f, 0.55)); scene.add(new THREE.AmbientLight(0xffffff, 0.24)); }
+else scene.add(new THREE.HemisphereLight(0xd8efff, 0xe2b27a, 0.72));
+const sun = new THREE.DirectionalLight(BLOCKY ? 0xfff3df : 0xfff0d2, BLOCKY ? 0.62 : 0.9);
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024,1024);
+sun.shadow.mapSize.set(HQ ? 2048 : 1024, HQ ? 2048 : 1024);
 sun.shadow.bias = -0.0008;
 Object.assign(sun.shadow.camera, {left:-20,right:20,top:20,bottom:-20,near:1,far:80});
 scene.add(sun, sun.target);
@@ -343,14 +349,21 @@ const grad = (() => {
 const matCache = {};
 function toon(c, dbl){
   const k = c + (dbl ? 'd' : '');
-  return matCache[k] || (matCache[k] = new THREE.MeshToonMaterial({color:c, gradientMap:grad, side: dbl ? THREE.DoubleSide : THREE.FrontSide}));
+  return matCache[k] || (matCache[k] = BLOCKY
+    ? new THREE.MeshPhongMaterial({color:c, shininess:24, specular:0x1e1e1e, side: dbl ? THREE.DoubleSide : THREE.FrontSide})
+    : new THREE.MeshToonMaterial({color:c, gradientMap:grad, side: dbl ? THREE.DoubleSide : THREE.FrontSide}));
+}
+function LitMat(p){
+  if (!BLOCKY) return new THREE.MeshToonMaterial(p);
+  const q = Object.assign({shininess:16, specular:0x141414}, p); delete q.gradientMap;
+  return new THREE.MeshPhongMaterial(q);
 }
 const OUT = new THREE.MeshBasicMaterial({color:0x2b1a12, side:THREE.BackSide});
 const BLACK = new THREE.MeshBasicMaterial({color:0x1d1410});
 function M(geo, color, o = 0.05, shadow = false, dbl = false){
   const m = new THREE.Mesh(geo, typeof color === 'string' ? toon(color, dbl) : color);
   m.castShadow = shadow; m.receiveShadow = true;
-  if (o){ const ol = new THREE.Mesh(geo, OUT); ol.scale.setScalar(1+o); m.add(ol); }
+  if (o && !BLOCKY){ const ol = new THREE.Mesh(geo, OUT); ol.scale.setScalar(1+o); m.add(ol); }
   return m;
 }
 function put(parent, m, x=0, y=0, z=0){ m.position.set(x,y,z); parent.add(m); return m; }
@@ -408,7 +421,14 @@ const world = new THREE.Group(); scene.add(world);
 const obstacles = [];   // {x,z,r}
 
 // ground, street, sidewalks
-const sand = new THREE.Mesh(new THREE.PlaneGeometry(240,240), toon('#e7c690'));
+const sand = new THREE.Mesh(new THREE.PlaneGeometry(240,240), BLOCKY ? LitMat({map:patternTex((x, n) => {
+  x.fillStyle = '#e2c189'; x.fillRect(0, 0, n, n);
+  for (const [cx, cy] of [[n/4, n/4], [3*n/4, n/4], [n/4, 3*n/4], [3*n/4, 3*n/4]]){
+    x.fillStyle = '#d3b27a'; x.beginPath(); x.arc(cx + 2, cy + 3, n/9, 0, Math.PI*2); x.fill();
+    x.fillStyle = '#ecd09d'; x.beginPath(); x.arc(cx, cy, n/9, 0, Math.PI*2); x.fill();
+  }
+  x.strokeStyle = 'rgba(0,0,0,.05)'; x.lineWidth = 2; x.strokeRect(0, 0, n, n);
+}, 64, 120, 120)}) : toon('#e7c690'));
 sand.rotation.x = -Math.PI/2; sand.receiveShadow = true; scene.add(sand);
 const cobble = patternTex((x,s) => {
   x.fillStyle = '#b8a283'; x.fillRect(0,0,s,s);
@@ -421,7 +441,7 @@ const cobble = patternTex((x,s) => {
     if (off){ x.beginPath(); x.rect(-cw/2+3, j*cw+3, cw-6, cw-6); x.fill(); }
   }
 }, 256, 2, 24);
-const street = new THREE.Mesh(new THREE.PlaneGeometry(CURB*2, L*2+8), new THREE.MeshToonMaterial({map:cobble, gradientMap:grad}));
+const street = new THREE.Mesh(new THREE.PlaneGeometry(CURB*2, L*2+8), LitMat({map:cobble, gradientMap:grad}));
 street.rotation.x = -Math.PI/2; street.position.y = 0.01; street.receiveShadow = true; scene.add(street);
 const tiles = patternTex((x,s) => {
   x.fillStyle = '#e9e1d2'; x.fillRect(0,0,s,s);
@@ -429,7 +449,7 @@ const tiles = patternTex((x,s) => {
   x.strokeStyle = '#b9ad9a'; x.lineWidth = 4; x.strokeRect(0,0,s,s); x.beginPath(); x.moveTo(s/2,0); x.lineTo(s/2,s); x.moveTo(0,s/2); x.lineTo(s,s/2); x.stroke();
 }, 128, 1, 40);
 for (const s of [-1,1]){
-  const walk = new THREE.Mesh(box(1.25,0.18,L*2+8), new THREE.MeshToonMaterial({map:tiles, gradientMap:grad}));
+  const walk = new THREE.Mesh(box(1.25,0.18,L*2+8), LitMat({map:tiles, gradientMap:grad}));
   walk.position.set(s*(CURB+0.625), 0.09, 0); walk.receiveShadow = true; scene.add(walk);
   put(world, M(box(0.16,0.22,L*2+8), '#f2ece2', 0.03), s*(CURB+0.05), 0.11, 0);
 }
@@ -688,7 +708,99 @@ for (let i=0;i<9;i++){
 /* =========================================================
    CHARACTERS
    ========================================================= */
-function person(o){
+
+/* ---- blocky "Roblox-style" avatars: box limbs, cylinder head, painted face ---- */
+const faceCache = {};
+function faceTex(mood, o = {}){
+  const key = mood + (o.mustache ? 'm' : '') + (o.glasses ? 'g' : '') + (o.only ? 'o' : '');
+  if (faceCache[key]) return faceCache[key];
+  const c = document.createElement('canvas'); c.width = 256; c.height = 224;
+  const x = c.getContext('2d'), ink = '#1d1410';
+  x.lineCap = x.lineJoin = 'round';
+  if (!o.only){
+    x.fillStyle = ink;
+    const eye = (cx) => {
+      if (mood === 'dizzy'){ x.strokeStyle = ink; x.lineWidth = 9; x.beginPath(); x.moveTo(cx-14, 70); x.lineTo(cx+14, 98); x.moveTo(cx+14, 70); x.lineTo(cx-14, 98); x.stroke(); return; }
+      const h = mood === 'shock' ? 24 : 19;
+      x.beginPath(); x.ellipse(cx, 84, 11, h, 0, 0, Math.PI*2); x.fill();
+      x.fillStyle = '#ffffff'; x.beginPath(); x.arc(cx + 3, 76, 4, 0, Math.PI*2); x.fill(); x.fillStyle = ink;
+    };
+    eye(96); eye(160);
+    x.strokeStyle = ink; x.lineWidth = 8;
+    const brow = (cx, s) => {
+      x.beginPath();
+      if (mood === 'angry'){ x.moveTo(cx - 20*s, 46); x.lineTo(cx + 18*s, 60); }
+      else if (mood === 'sad'){ x.moveTo(cx - 20*s, 60); x.lineTo(cx + 18*s, 48); }
+      else if (mood === 'shock'){ x.moveTo(cx - 18, 40); x.quadraticCurveTo(cx, 30, cx + 18, 40); }
+      else { x.moveTo(cx - 18, 52); x.quadraticCurveTo(cx, 44, cx + 18, 52); }
+      x.stroke();
+    };
+    brow(96, 1); brow(160, -1);
+    x.lineWidth = 9;
+    x.beginPath();
+    if (mood === 'happy'){ x.arc(128, 128, 38, .15*Math.PI, .85*Math.PI); x.stroke(); }
+    else if (mood === 'shock' || mood === 'dizzy'){ x.fillStyle = '#5a1d1d'; x.ellipse(128, 160, 16, 21, 0, 0, Math.PI*2); x.fill(); }
+    else { x.arc(128, 188, 34, 1.2*Math.PI, 1.8*Math.PI); x.stroke(); }
+    x.fillStyle = 'rgba(255,120,120,.35)';
+    for (const cx of [66, 190]){ x.beginPath(); x.ellipse(cx, 126, 18, 11, 0, 0, Math.PI*2); x.fill(); }
+  }
+  if (o.glasses){ x.strokeStyle = ink; x.lineWidth = 7; for (const cx of [96, 160]){ x.beginPath(); x.arc(cx, 84, 27, 0, Math.PI*2); x.stroke(); } x.beginPath(); x.moveTo(123, 80); x.lineTo(133, 80); x.stroke(); }
+  if (o.mustache){ x.fillStyle = '#3a2a22'; x.beginPath(); x.moveTo(84, 128); x.quadraticCurveTo(128, 104, 172, 128); x.quadraticCurveTo(150, 146, 128, 132); x.quadraticCurveTo(106, 146, 84, 128); x.fill(); }
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4;
+  return (faceCache[key] = new THREE.MeshLambertMaterial({map:t, transparent:true, alphaTest:.15}));
+}
+const FACE_GEO = new THREE.CylinderGeometry(.346, .346, .52, 18, 1, true, -1.05, 2.1);
+function personBlocky(o){
+  const g = new THREE.Group(), rig = new THREE.Group(); g.add(rig);
+  const k = o.scale || 1; rig.scale.setScalar(k);
+  const legs = [], arms = [];
+  const B = (w, h, d, col, x, y, z, parent = rig, shadow = true) => put(parent, M(box(w, h, d), col, 0, shadow), x, y, z);
+  for (const s of [-1,1]){
+    const lp = put(rig, new THREE.Group(), s*.25, 1.0, 0);
+    if (o.shorts){ B(.5,.46,.52, o.pants, 0,-.23,0, lp); B(.46,.42,.46, o.skin, 0,-.67,0, lp); }
+    else B(.48,.9,.5, o.robe ? o.shirt : o.pants, 0,-.45,0, lp);
+    B(.5,.14,.6, o.shoe || '#3b2a20', 0,-.93,.05, lp);
+    legs.push(lp);
+  }
+  B(1.0,1.0,.52, o.shirt, 0,1.5,0);
+  if (o.robe){ B(1.06,.78,.58, o.shirt, 0,.64,0); B(.1,.6,.04, shade(o.shirt,-.2), 0,1.62,.27); B(1.08,.08,.6, shade(o.shirt,-.12), 0,.27,0); }
+  if (o.stripe) B(1.02,.16,.54, o.stripe, 0,1.62,0, rig, false);
+  if (o.belly) B(.86,.6,.3, o.shirt, 0,1.35,.3);
+  if (o.apron) B(.82,.95,.05, o.apron, 0,1.2,.3, rig, false);
+  if (!o.robe && !o.shorts) B(1.0,.14,.54, shade(o.pants,-.15), 0,1.02,0, rig, false);
+  for (const s of [-1,1]){
+    const ap = put(rig, new THREE.Group(), s*.75, 1.95, 0);
+    B(.48,.55,.5, o.sleeve || o.shirt, 0,-.22,0, ap);
+    B(.46,.46,.46, o.skin, 0,-.72,0, ap);
+    arms.push(ap);
+  }
+  const hy = 2.32;
+  const head = put(rig, new THREE.Group(), 0, hy, 0);
+  put(head, M(new THREE.CylinderGeometry(.34,.34,.62,20), o.skin, 0, true));
+  put(head, M(new THREE.CylinderGeometry(.3,.34,.06,20), o.skin, 0), 0, .33, 0);
+  const fopt = {mustache:!!o.mustache, glasses:!!o.glasses};
+  const face = put(head, new THREE.Mesh(FACE_GEO, faceTex('happy', fopt)), 0, -.02, 0);
+  if (o.hair){ put(head, M(new THREE.CylinderGeometry(.37,.37,.2,20), o.hair, 0), 0, .27, 0); B(.62,.42,.16, o.hair, 0,.05,-.28, head, false); }
+  if (o.cap){ put(head, M(new THREE.CylinderGeometry(.37,.37,.2,20), o.cap, 0), 0, .32, 0); B(.5,.05,.34, o.cap, 0,.26,.42, head, false); B(.1,.1,.1, '#e84b3c', 0,.46,0, head, false); }
+  if (o.taqiyah) put(head, M(new THREE.CylinderGeometry(.3,.33,.2,20), o.taqiyah, 0), 0, .38, 0);
+  if (o.scarf){
+    put(head, M(new THREE.CylinderGeometry(.39,.41,.74,20,1,true,1.2,Math.PI*2-2.4), o.scarf, 0, false, true), 0, -.02, 0);
+    put(head, M(new THREE.CylinderGeometry(.39,.39,.1,20), o.scarf, 0), 0, .36, 0);
+    B(.86,.42,.22, o.scarf, 0,-.42,-.16, head, false);
+  }
+  const disguise = new THREE.Group(); disguise.visible = false; head.add(disguise);
+  put(disguise, M(new THREE.CylinderGeometry(.24,.3,.4,16), '#c0182b', 0), 0, .5, 0);
+  put(disguise, new THREE.Mesh(box(.04,.3,.04), BLACK), .16, .66, -.12).rotation.z = .6;
+  put(disguise, new THREE.Mesh(new THREE.CylinderGeometry(.352,.352,.52,18,1,true,-1.05,2.1), faceTex('x', {only:true, glasses:true, mustache:true})), 0, -.02, 0);
+  const stars = new THREE.Group(); stars.visible = false; stars.position.y = hy + .75; rig.add(stars);
+  for (let i=0;i<3;i++){ const s_ = put(stars, new THREE.Mesh(new THREE.OctahedronGeometry(.13), toon('#ffd34d')), Math.cos(i*2.1)*.55, 0, Math.sin(i*2.1)*.55); s_.scale.y = 1.5; }
+  const bucket = M(cyl(.46,.38,.6,14), '#9aa3ab', 0); bucket.position.y = .4; bucket.visible = false; head.add(bucket);
+  scene.add(g);
+  return {g, rig, head, legs, arms, face, fopt, stars, bucket, disguise, k, ph:0, sq:1, mood:'happy', blocky:true};
+}
+
+function person(o){ return BLOCKY ? personBlocky(o) : personToon(o); }
+function personToon(o){
   const g = new THREE.Group(), rig = new THREE.Group(); g.add(rig);
   const k = o.scale || 1; rig.scale.setScalar(k);
   const legs = [], arms = [];
@@ -767,6 +879,7 @@ function addGlasses(parent){
 }
 function setMood(r, m){
   if (r.mood === m) return; r.mood = m;
+  if (r.face){ r.face.material = faceTex(m, r.fopt); return; }
   const [l, rr] = r.brows;
   l.position.y = rr.position.y = .34; l.rotation.z = rr.rotation.z = 0;
   r.smile.visible = m === 'happy'; r.frown.visible = m === 'angry' || m === 'sad'; r.oh.visible = m === 'shock' || m === 'dizzy';
@@ -1503,7 +1616,7 @@ function makeSmoke(){
   sfx('puff');
   const s = {x:P.x, z:P.z, life:6, puffs:[]};
   for (let i=0;i<16;i++){
-    const m = new THREE.Mesh(sph(1,10,8), new THREE.MeshToonMaterial({color:pick(['#ff9ad5','#ffe27a','#9fe3ff','#b6f0a0','#d9b3f0']), gradientMap:grad, transparent:true, opacity:.85}));
+    const m = new THREE.Mesh(sph(1,10,8), LitMat({color:pick(['#ff9ad5','#ffe27a','#9fe3ff','#b6f0a0','#d9b3f0']), gradientMap:grad, transparent:true, opacity:.85}));
     m.position.set(P.x + rand(-1.5,1.5), rand(.5,2.6), P.z + rand(-1.5,1.5)); m.scale.setScalar(.2); scene.add(m);
     s.puffs.push({m, target:rand(1,1.8), ph:rand(0,6)});
   }
@@ -1848,6 +1961,16 @@ $('vol').addEventListener('input', e => { settings.vol = +e.target.value; applyV
 $('vol').addEventListener('change', () => sfx('coin'));
 $('sens').addEventListener('input', e => { settings.sens = +e.target.value; store.set('hara-settings', settings); });
 renderSound();
+function renderGfx(){
+  const lt = $('lookToggle'), ht = $('hqToggle');
+  lt.textContent = settings.look === 'toon' ? 'كرتون' : 'روبلوكس'; lt.classList.add('on');
+  ht.textContent = settings.hq === false ? 'عادية (أسرع)' : 'عالية'; ht.classList.toggle('on', settings.hq !== false);
+  $('gfxNote').hidden = (settings.look !== 'toon') === BLOCKY && (settings.hq !== false) === HQ;
+}
+$('lookToggle').addEventListener('click', () => { settings.look = settings.look === 'toon' ? 'blocky' : 'toon'; store.set('hara-settings', settings); renderGfx(); });
+$('hqToggle').addEventListener('click', () => { settings.hq = settings.hq === false; store.set('hara-settings', settings); renderGfx(); });
+$('gfxApply').addEventListener('click', () => { try { location.reload(); } catch(e){} });
+renderGfx();
 function togglePause(force){
   if (!G.running && !G.paused) return;
   G.paused = force ?? !G.paused;
