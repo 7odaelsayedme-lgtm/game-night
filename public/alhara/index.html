@@ -148,6 +148,38 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 .rc.no{opacity:.5}
 .rc.ok{box-shadow:inset 0 0 0 3px var(--leaf)}
 #newWorld{margin-top:14px;font:700 14px var(--body);border:2px solid var(--ink);border-radius:999px;padding:4px 14px;background:var(--paper);color:var(--ink);cursor:pointer}
+#portalCard{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:7;display:flex;align-items:center;gap:12px;
+  background:var(--paper);border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink);padding:8px 12px;width:min(460px,calc(100% - 420px))}
+#portalCard .pi{font-size:40px;line-height:1}
+#portalCard .pt{flex:1;min-width:0;display:grid;gap:2px}
+#portalCard b{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.2}
+#portalCard small{font-size:13px;line-height:1.5;color:var(--mute)}
+#pcGo{font-family:var(--display);font-size:22px;background:var(--leaf);color:var(--paper);text-shadow:0 2px 0 var(--ink);border:3px solid var(--ink);border-radius:14px;padding:4px 16px;box-shadow:0 4px 0 var(--ink);cursor:pointer;white-space:nowrap}
+#pcGo:disabled{filter:grayscale(1);opacity:.6}
+#gnPill{background:#fff3c4}
+#shopPanel,#wheelPanel{right:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(440px,calc(100% - 32px));max-height:calc(100% - 250px)}
+#emotePanel{right:16px;bottom:calc(250px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100% - 32px))}
+.tabs{display:flex;gap:6px;padding:8px 12px 0}
+.tabs button{flex:1;font-family:var(--display);font-size:18px;border:2px solid var(--ink);border-radius:12px;padding:2px;background:var(--paper);color:var(--ink);cursor:pointer}
+.tabs button.on{background:var(--sun)}
+.shopRow{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.si{display:grid;justify-items:center;gap:1px;border:2px solid var(--ink);border-radius:14px;padding:6px 4px;background:var(--paper);color:var(--ink);font:inherit;cursor:pointer;text-align:center}
+.si .i{font-size:30px;line-height:1.2;width:34px;height:34px;display:grid;place-items:center}
+.si .i.sw{border:2px solid var(--ink);border-radius:8px;width:30px;height:30px}
+.si .n{font-family:var(--display);font-size:15px;line-height:1.25}
+.si .p{font-size:12px;font-weight:700;color:var(--mute);line-height:1.4}
+.si.on{background:#d9f5e3;box-shadow:inset 0 0 0 3px var(--leaf)}
+.si.poor{opacity:.55}
+.si.bd{cursor:default}.si.locked{opacity:.5}
+.wbox{position:relative;width:220px;height:220px;margin:14px auto 4px}
+#wheel{width:220px;height:220px;border-radius:50%;border:5px solid var(--ink);box-shadow:0 5px 0 var(--ink);position:relative;transition:transform 3.5s cubic-bezier(.17,.67,.2,1)}
+.wl{position:absolute;left:50%;top:50%;width:70px;margin:-11px 0 0 -35px;text-align:center;font:900 15px var(--body);color:#fff;text-shadow:0 1px 2px #000;transform-origin:50% 50%}
+.wptr{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:28px;color:var(--ink);z-index:2}
+#spinBtn{margin:0 12px 14px;font-family:var(--display);font-size:22px;background:var(--pink);color:var(--paper);text-shadow:0 2px 0 var(--ink);border:3px solid var(--ink);border-radius:14px;padding:6px 10px;box-shadow:0 4px 0 var(--ink);cursor:pointer}
+#spinBtn:disabled{filter:grayscale(1)}
+.emg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}
+.emg button{display:grid;justify-items:center;font-size:30px;border:2px solid var(--ink);border-radius:14px;background:var(--paper);padding:6px 2px;cursor:pointer;color:var(--ink)}
+.emg span{font:700 13px var(--body)}
 #chat{left:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(360px,calc(100% - 32px));max-height:calc(100% - 290px);min-height:240px}
 #chat .who{font-size:13px;font-weight:700;display:flex;align-items:center;gap:4px}
 .dot{width:10px;height:10px;border-radius:50%;background:#bbb;border:2px solid var(--ink)}
@@ -208,6 +240,9 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   #hotbar{bottom:calc(150px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px)}
   .hs{width:46px;height:46px}
   #craftPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:55%}
+  #shopPanel,#wheelPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:58%}
+  #portalCard{bottom:calc(150px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px)}
+  #emotePanel{bottom:calc(220px + env(safe-area-inset-bottom,0px))}
   #modeGrid{grid-template-columns:1fr 1fr}
   #prankPanel,#chat{left:16px;right:auto;top:calc(env(safe-area-inset-top,0px) + 112px);bottom:auto;max-height:38%;min-height:0}
   #prankPanel{right:16px;left:auto}
@@ -222,11 +257,13 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   <div class="hgroup">
     <div class="pill"><small>النقط</small><span id="score">0</span></div>
     <div class="pill"><span class="coin"></span><span id="coins">20</span></div>
+    <div class="pill" id="gnPill" title="جنيه الحارة">💰 <span id="gn">0</span></div>
     <div class="pill" id="hearts"><span>♥</span><span>♥</span><span>♥</span></div>
     <div class="pill" id="timer" hidden>3:00</div>
     <div class="pill" id="mini" hidden></div>
   </div>
   <div class="hgroup">
+    <button class="ibtn" id="hubBtn" aria-label="الميدان">🏛️</button>
     <button class="ibtn" id="boardBtn" aria-label="التحديات">🎮</button>
     <button class="ibtn" id="chatBtn" aria-label="الدردشة">💬<span class="badge" id="unread" hidden>0</span></button>
     <button class="ibtn" id="soundBtn" aria-label="الصوت">🔊</button>
@@ -249,6 +286,26 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 </section>
 
 <div id="hotbar" dir="rtl" hidden></div>
+<div id="portalCard" dir="rtl" hidden><span class="pi" id="pcIco"></span><div class="pt"><b id="pcName"></b><small id="pcDesc"></small></div><button id="pcGo" type="button">ادخل</button></div>
+<section class="panel" id="shopPanel" dir="rtl" hidden>
+  <header><b>محل الشكل</b><span class="pill" style="font-size:16px;box-shadow:none">💰 <span id="gn2">0</span></span><button class="x" id="shopClose" aria-label="اقفل">✕</button></header>
+  <div class="tabs"><button id="tabShop" type="button" class="on">المحل</button><button id="tabBadges" type="button">نياشيني 🎖️</button></div>
+  <div class="cscroll"><div id="shopGrid"></div><div id="badgeGrid" hidden></div></div>
+</section>
+<section class="panel" id="wheelPanel" dir="rtl" hidden>
+  <header><b>عجلة الحظ 🎡</b><button class="x" id="wheelClose" aria-label="اقفل">✕</button></header>
+  <div class="wbox"><div class="wptr">▼</div><div id="wheel"></div></div>
+  <p class="bnote" id="wheelNote" style="text-align:center"></p>
+  <button id="spinBtn" type="button">لف العجلة</button>
+</section>
+<section class="panel" id="emotePanel" dir="rtl" hidden>
+  <header><b>حركات</b><button class="x" id="emoteClose" aria-label="اقفل">✕</button></header>
+  <div class="emg">
+    <button type="button" data-em="dance">💃<span>رقص</span></button><button type="button" data-em="wave">👋<span>سلام</span></button>
+    <button type="button" data-em="laugh">😂<span>ضحك</span></button><button type="button" data-em="cheer">🙌<span>فرحة</span></button>
+    <button type="button" data-em="love">❤️<span>حب</span></button><button type="button" data-em="angry">😤<span>زعل</span></button>
+  </div>
+</section>
 <section class="panel" id="craftPanel" dir="rtl" hidden>
   <header><b>الشنطة وكتاب الأسطى</b><button class="x" id="craftClose" aria-label="اقفل">✕</button></header>
   <div class="cscroll">
@@ -285,7 +342,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
       <li><b>اسحب على الشاشة</b> تلف الكاميرا، وبصباعين تقرّب وتبعّد</li>
       <li><b>🎒 المقالب</b> اختار المقلب، وزرار المقلب الكبير ينفّذه</li>
       <li><b>نط</b> عشان تفلت، و<b>💨 الدخان</b> و<b>🥸 التنكّر</b> بيضيّعوا الجار</li>
-      <li><b>🎮</b> تحديات ضد صحابك: حرب السراير، سباق الموانع، والمزيد</li>
+      <li><b>🏛️ الميدان</b> فيه بوابات لكل الألعاب، ومحل وعجلة حظ ونياشين</li>
     </ul>
     <div class="field"><label for="nickStart">اسمك في الحارة:</label><input id="nickStart" maxlength="16" autocomplete="off"></div>
     <button class="cta" id="playBtn">يلا نلعب</button>
@@ -314,7 +371,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   <div class="card">
     <h1 id="resTitle">التحدي خلص!</h1>
     <ol id="resList"></ol>
-    <div class="row"><button class="cta" id="rematchBtn">تحدّي تاني</button><button class="cta alt" id="soloBtn">ارجع للحارة</button></div>
+    <div class="row"><button class="cta" id="rematchBtn">تحدّي تاني</button><button class="cta alt" id="soloBtn">ارجع للميدان</button></div>
   </div>
 </div>
 
@@ -794,7 +851,8 @@ function personBlocky(o){
   const g = new THREE.Group(), rig = new THREE.Group(); g.add(rig);
   const k = o.scale || 1; rig.scale.setScalar(k);
   const legs = [], arms = [];
-  const B = (w, h, d, col, x, y, z, parent = rig, shadow = true) => put(parent, M(box(w, h, d), col, 0, shadow), x, y, z);
+  const shirts = [];
+  const B = (w, h, d, col, x, y, z, parent = rig, shadow = true) => { const m = put(parent, M(box(w, h, d), col, 0, shadow), x, y, z); if (col === o.shirt) shirts.push(m); return m; };
   for (const s of [-1,1]){
     const lp = put(rig, new THREE.Group(), s*.25, 1.0, 0);
     if (o.shorts){ B(.5,.46,.52, o.pants, 0,-.23,0, lp); B(.46,.42,.46, o.skin, 0,-.67,0, lp); }
@@ -821,7 +879,8 @@ function personBlocky(o){
   const fopt = {mustache:!!o.mustache, glasses:!!o.glasses};
   const face = put(head, new THREE.Mesh(FACE_GEO, faceTex('happy', fopt)), 0, -.02, 0);
   if (o.hair){ put(head, M(new THREE.CylinderGeometry(.37,.37,.2,20), o.hair, 0), 0, .27, 0); B(.62,.42,.16, o.hair, 0,.05,-.28, head, false); }
-  if (o.cap){ put(head, M(new THREE.CylinderGeometry(.37,.37,.2,20), o.cap, 0), 0, .32, 0); B(.5,.05,.34, o.cap, 0,.26,.42, head, false); B(.1,.1,.1, '#e84b3c', 0,.46,0, head, false); }
+  const capG = put(head, new THREE.Group());
+  if (o.cap){ put(capG, M(new THREE.CylinderGeometry(.37,.37,.2,20), o.cap, 0), 0, .32, 0); B(.5,.05,.34, o.cap, 0,.26,.42, capG, false); B(.1,.1,.1, '#e84b3c', 0,.46,0, capG, false); }
   if (o.taqiyah) put(head, M(new THREE.CylinderGeometry(.3,.33,.2,20), o.taqiyah, 0), 0, .38, 0);
   if (o.scarf){
     put(head, M(new THREE.CylinderGeometry(.39,.41,.74,20,1,true,1.2,Math.PI*2-2.4), o.scarf, 0, false, true), 0, -.02, 0);
@@ -836,7 +895,7 @@ function personBlocky(o){
   for (let i=0;i<3;i++){ const s_ = put(stars, new THREE.Mesh(new THREE.OctahedronGeometry(.13), toon('#ffd34d')), Math.cos(i*2.1)*.55, 0, Math.sin(i*2.1)*.55); s_.scale.y = 1.5; }
   const bucket = M(cyl(.46,.38,.6,14), '#9aa3ab', 0); bucket.position.y = .4; bucket.visible = false; head.add(bucket);
   scene.add(g);
-  return {g, rig, head, legs, arms, face, fopt, stars, bucket, disguise, k, ph:0, sq:1, mood:'happy', blocky:true};
+  return {g, rig, head, legs, arms, face, fopt, stars, bucket, disguise, k, ph:0, sq:1, mood:'happy', blocky:true, capG, shirts, shirt0:o.shirt};
 }
 
 function person(o){ return BLOCKY ? personBlocky(o) : personToon(o); }
@@ -888,10 +947,11 @@ function personToon(o){
   const oh = put(head, new THREE.Mesh(sph(.09,10,8), new THREE.MeshBasicMaterial({color:0x5a1d1d})), 0, -.26, .48); oh.scale.set(1,1.3,.5); oh.visible = false;
   if (o.mustache) put(head, M(box(.44,.1,.1), '#3a2a22', .06), 0, -.16, .5);
   if (o.hair){ const hh = put(head, M(new THREE.SphereGeometry(.555,16,10,0,Math.PI*2,0,Math.PI*.42), o.hair, .04), 0, .02, -.04); hh.rotation.x = -.25; }
+  const capG = put(head, new THREE.Group());
   if (o.cap){
-    put(head, M(new THREE.SphereGeometry(.56,16,10,0,Math.PI*2,0,Math.PI/2), o.cap, .05), 0, .06, 0);
-    put(head, M(box(.56,.06,.48), o.cap, .07), 0, .12, .55);
-    put(head, new THREE.Mesh(sph(.07,6,5), toon('#e84b3c')), 0, .62, 0);
+    put(capG, M(new THREE.SphereGeometry(.56,16,10,0,Math.PI*2,0,Math.PI/2), o.cap, .05), 0, .06, 0);
+    put(capG, M(box(.56,.06,.48), o.cap, .07), 0, .12, .55);
+    put(capG, new THREE.Mesh(sph(.07,6,5), toon('#e84b3c')), 0, .62, 0);
   }
   if (o.scarf){
     put(head, M(new THREE.SphereGeometry(.6,18,14,Math.PI/2+.95,Math.PI*2-1.9,0,Math.PI*.74), o.scarf, .04, false, true));
@@ -911,7 +971,7 @@ function personToon(o){
   const bucket = M(cyl(.48,.38,.62,12), '#9aa3ab', .05); bucket.position.y = .32; bucket.visible = false; head.add(bucket);
   g.traverse(m => { if (m.isMesh && m.material === OUT) m.castShadow = false; });
   scene.add(g);
-  return {g, rig, head, legs, arms, brows, smile, frown, oh, stars, bucket, disguise, k, ph:0, sq:1, mood:'happy'};
+  return {g, rig, head, legs, arms, brows, smile, frown, oh, stars, bucket, disguise, k, ph:0, sq:1, mood:'happy', capG};
 }
 function addGlasses(parent){
   for (const s of [-1,1]) put(parent, new THREE.Mesh(new THREE.TorusGeometry(.13,.025,6,14), BLACK), s*.19, .1, .55);
@@ -1154,6 +1214,7 @@ function gain(pts, coins, msg, pos){
     return;
   }
   if (!G.running) return;
+  onPrankScored();
   setScore(G.score + pts); setCoins(G.coins + coins);
   if (msg) toast(`${msg} +${pts}`, 'good');
   if (pos){ burst(pos, 14, ['#ff5d8f','#ffc93c','#3a7bd5','#2fae6f','#ffffff'], {cube:true, size:.12, speed:3, up:6, grav:9, life:1.1}); pop('+' + pts, pos.clone().add(new THREE.Vector3(0,.6,0)), '#9fe3b8', 1.1); }
@@ -1669,6 +1730,7 @@ const cds = {}; PRANKS.forEach(p => cds[p.id] = 0);
 let selected = PR[store.get('hara-prank', 'balloon')] || PR.balloon;
 
 function doPrank(){
+  if (HUB.on) return togglePanel('emote');
   if (CR.on) return craftToggle();
   if (MODE.id) return modeAction();
   if (!G.running || G.paused) return;
@@ -1940,7 +2002,7 @@ function bindBtn(el, fn){
 }
 bindBtn($('jump'), () => doJump());
 bindBtn($('prank'), () => doPrank());
-bindBtn($('menuBtn'), () => CR.on ? (togglePanel('craft'), CR.invVer++) : MODE.id ? modeAction2() : togglePanel('prank'));
+bindBtn($('menuBtn'), () => CR.on ? (togglePanel('craft'), CR.invVer++) : HUB.on ? togglePanel('shop') : MODE.id ? modeAction2() : togglePanel('prank'));
 document.addEventListener('contextmenu', e => { if (!typing(e)) e.preventDefault(); });
 
 function doJump(){
@@ -1990,6 +2052,11 @@ function togglePanel(which){
   $('chat').hidden = next !== 'chat';
   $('board').hidden = next !== 'board';
   $('craftPanel').hidden = next !== 'craft';
+  $('shopPanel').hidden = next !== 'shop';
+  $('wheelPanel').hidden = next !== 'wheel';
+  $('emotePanel').hidden = next !== 'emote';
+  if (next === 'shop') renderShop();
+  if (next === 'wheel') renderWheel();
   $('chatBtn').classList.toggle('on', next === 'chat');
   $('boardBtn').classList.toggle('on', next === 'board');
   if (next === 'chat'){ chatState.unread = 0; renderUnread(); const m = $('msgs'); m.scrollTop = m.scrollHeight; }
@@ -2047,6 +2114,7 @@ function resetGame(){
   cart.t = 0;
 }
 function startGame(){
+  if (HUB.on) hubExit();
   if (CR.on) exitCraft(true);
   if (MODE.id) clearMode();
   audioInit();
@@ -2064,7 +2132,7 @@ function gameOver(){
   $('finalScore').textContent = G.score; $('best').textContent = best;
   setTimeout(() => { $('over').hidden = false; }, 700);
 }
-$('playBtn').addEventListener('click', startGame);
+$('playBtn').addEventListener('click', () => enterHub());
 $('againBtn').addEventListener('click', startGame);
 
 /* =========================================================
@@ -2197,6 +2265,9 @@ function syncAvatars(peers){
     const wasOwner = av.co; av.co = pp.co ? 1 : 0; av.ct = clamp(+pp.ct || 0, 0, 1);
     if (av.co && !wasOwner && av.seen && !(CR.on && CR.wid === av.mi)) toast('🏝️ ' + av.name + ' فتح جزيرته! ادخلها من 🎮', 'good', 3.5);
     av.seen = true;
+    av.gn = Math.max(0, Math.min(1e7, pp.gn|0)); av.bd = clamp(pp.bd|0, 0, 99);
+    if (Array.isArray(pp.cs)){ const lk = {h:SHOPI[pp.cs[0]] ? pp.cs[0] : '', s:SHOPI[pp.cs[1]] ? pp.cs[1] : '', p:SHOPI[pp.cs[2]] ? pp.cs[2] : ''}; applyLook(av.p, lk, av.peer); }
+    if (typeof pp.em === 'string' && pp.em !== av.em){ const first = av.em === undefined; av.em = pp.em; const kind = pp.em.split(':')[0]; if (!first && EMO[kind]) bubbleOver(av.p.g.position, EMO[kind], av.peer); }
     av.p.disguise.visible = !!pp.d; av.dg = pp.d ? 1 : 0; av.h = !!pp.h; av.inv = !!pp.i;
   }
   for (const [k, av] of avatars) if (!seen.has(k)){ scene.remove(av.p.g); if (av.bubble) scene.remove(av.bubble); av.tag.remove(); avatars.delete(k); }
@@ -2212,7 +2283,7 @@ function updateAvatars(dt){
     const st = av.s;
     if (st === 'spin') av.p.g.rotation.y += dt*14;
     else { let dr = av.r - av.p.g.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); av.p.g.rotation.y += dr*Math.min(1, dt*10); }
-    animateRig(av.p, d > .05 ? Math.min(7, d*6) : 0, dt, ['dance','float','blind'].includes(st) ? 'up' : null);
+    animateRig(av.p, d > .05 ? Math.min(7, d*6) : 0, dt, ['dance','float','blind'].includes(st) ? 'up' : st === 'wave' ? 'fist' : null);
     av.p.stars.visible = ['dizzy','spin','slip'].includes(st);
     av.p.bucket.visible = st === 'blind';
     if (st === 'slip') av.p.rig.rotation.x = -1.3;
@@ -2233,6 +2304,7 @@ function sendPresence(dt){
   const pres = {n:myNick, c:myColor, x:Math.round(P.x*100)/100, z:Math.round(P.z*100)/100, y:Math.round(P.y*10)/10, r:Math.round(player.g.rotation.y*100)/100, d:P.disguise > 0 ? 1 : 0, sc:G.score, s:playerStatus(), h:P.hidden ? 1 : 0, i:P.inv > 0 ? 1 : 0, v:document.hidden ? 0 : 1};
   if (MODE.id){ const sc = myModeScore(); Object.assign(pres, {mi:MODE.ep, ma:MODE.alive ? 1 : 0, mo:MODE.out ? 1 : 0, mf:MODE.finished ? 1 : 0, ms:sc.ms, md:sc.md}); }
   else Object.assign(pres, {mi:worldId(), ma:1, mo:0, mf:0, ms:0, md:''});
+  pres.cs = [LOOK.h || '', LOOK.s || '', LOOK.p || '']; pres.gn = WAL.gn; pres.bd = BDG.size; pres.em = P.em || '';
   pres.co = CR.on && !CR.guestOf ? 1 : 0; pres.ct = CR.on ? Math.round(CR.time*1000)/1000 : 0;
   const s = JSON.stringify(pres);
   if (s === lastPres && !presenceDirty) return;
@@ -2354,7 +2426,7 @@ function applyHit(kind, who, from){
 }
 let myBubble = null;
 function updatePlayerStatus(dt){
-  for (const k of ['stun','slow','float','dance','blind','pvpInv']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
+  for (const k of ['stun','slow','float','dance','blind','pvpInv','wave']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   if (P.stun <= 0) P.fx = '';
   player.stars.visible = P.stun > 0 && ['dizzy','spin','slip'].includes(P.fx);
   if (P.stun > 0 && P.fx === 'spin') player.g.rotation.y += dt*14;
@@ -2367,6 +2439,7 @@ function updatePlayerStatus(dt){
   else if (myBubble){ scene.remove(myBubble); myBubble = null; sfx('pop'); burst(new THREE.Vector3(P.x, P.y + 1.5, P.z), 12, ['#ffffff','#bfe7ff'], {size:.12, speed:3, up:3}); }
 }
 function playerStatus(){
+  if (P.wave > 0) return 'wave';
   if (P.float > 0) return 'float';
   if (P.blind > 0) return 'blind';
   if (P.dance > 0) return 'dance';
@@ -2463,7 +2536,7 @@ function netBroadcast(dt){
   if (room && chatState.live && !isHost() && performance.now() - lastNbAt > 3500){
     staleHosts.set(hostId, Date.now()); electHost(room.peers()); lastNbAt = performance.now();
   }
-  if (!netHost() || MODE.id || CR.on) return;
+  if (!netHost() || MODE.id || CR.on || HUB.on) return;
   popBudget = Math.min(10, popBudget + dt*8);
   nbT -= dt; if (nbT > 0) return; nbT = .1;
   shareAct({k:'nb',
@@ -2766,6 +2839,7 @@ function modeSpawn(){
 function startMode(d, byName){
   const id = d.m, M_ = MODES[id];
   if (!M_ || id === 'pranks' || M_.craft) return;
+  if (HUB.on) hubExit();
   if (CR.on) exitCraft(true);
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
@@ -2815,6 +2889,13 @@ function finishMode(d){
   if (MODE.id === 'beds' && (d.win === 'r' || d.win === 'b')) title = d.win === MODE.team ? 'فريقك كسب! 🏆' : 'الفريق ' + TEAM_NAME[d.win] + ' كسب!';
   else if (rows.length > 1 && rows[0].me) title = 'إنت الكسبان! 🏆';
   sfx('score');
+  const won = MODE.id === 'beds' ? d.win === MODE.team : rows.length > 1 && rows[0].me;
+  setTimeout(() => addGn(won ? 40 : 10, won ? 'كسبت التحدي' : 'شاركت في التحدي'), 1600);
+  if (won) badge('win');
+  if (won && MODE.id === 'beds') badge('bed');
+  if (won && MODE.id === 'flood') badge('flood');
+  if (MODE.id === 'obby' && MODE.finished) badge('obby');
+  if (MODE.id === 'chickens' && MODE.score >= 10) badge('chick');
   setTimeout(() => {
     fillList($('resList'), rows);
     $('resTitle').textContent = title;
@@ -2825,11 +2906,11 @@ function finishMode(d){
 function requestMode(id){
   const M_ = MODES[id];
   if (!M_) return;
-  if (M_.craft){ togglePanel(null); return CR.on ? exitCraft() : enterCraft(); }
+  if (M_.craft){ togglePanel(null); return CR.on ? (exitCraft(), enterHub()) : enterCraft(); }
   if (MODE.id || MATCH.on) return;
   if (CR.on) exitCraft(true);
   if (id === 'pranks') return requestMatch();
-  const pl = [meId(), ...[...avatars.values()].filter(a => !a.mi).map(a => a.peer)];
+  const pl = [meId(), ...freeAvatars().map(a => a.peer)];
   if (pl.length < M_.min){ toast('«' + M_.name + '» محتاج ' + M_.min + ' لاعبين على الأقل', 'warn', 3); return; }
   const teams = {};
   if (id === 'beds') pl.slice().sort(() => Math.random() - .5).forEach((p, i) => teams[p] = i % 2 ? 'b' : 'r');
@@ -2849,7 +2930,7 @@ function onModeStart(d, from, who){
 function modeAvatars(){ return [...avatars.values()].filter(a => a.mi === MODE.ep && MODE.pl.includes(a.peer)); }
 function modeHostId(){ return [meId(), ...modeAvatars().map(a => a.peer)].sort()[0]; }
 const isModeHost = () => modeHostId() === meId();
-function worldId(){ return MODE.id ? MODE.ep : (CR.on ? CR.wid : 0); }
+function worldId(){ return MODE.id ? MODE.ep : CR.on ? CR.wid : HUB.on ? 2 : 0; }
 function myModeScore(){
   switch (MODE.id){
     case 'balloons': return {ms:MODE.score, md:MODE.score + ' 💥'};
@@ -3609,6 +3690,7 @@ function canCraft(r){ if (r.out > 200 && CR.tool >= ITEMS[r.out].tool) return fa
 function doCraft(r){
   if (!canCraft(r)){ sfx('nope'); return; }
   for (const [id, n] of Object.entries(r.need)) invAdd(+id, -n);
+  if (r.out === 203) badge('ironpick');
   if (r.out > 200){ CR.tool = Math.max(CR.tool, ITEMS[r.out].tool); toast('عملت ' + ITEMS[r.out].name + '! بقيت تكسر أسرع ' + ITEMS[r.out].ico, 'good', 2.5); }
   else { invAdd(r.out, r.n); toast('عملت ' + r.n + ' ' + itemName(r.out), 'good', 1.6); if (!CR.selId) CR.selId = r.out; }
   sfx('coin'); setTimeout(() => sfx('score'), 120); CR.invVer++;
@@ -3672,6 +3754,10 @@ function breakBlock(h){
   const pos = new THREE.Vector3(h.x + .5 + OX, h.y + .5, h.z + .5 + OZ);
   burst(pos, 12, [b.col, shade(b.col, -.15), shade(b.col, .1)], {cube:true, size:.12, speed:2.5, up:4, grav:14, life:.7});
   sfx('crash');
+  CR.brokeN = (+store.get('hara-broke', 0) || 0) + 1; store.set('hara-broke', CR.brokeN);
+  if (CR.brokeN % 25 === 0) addGn(5, 'شغل في الجزيرة');
+  if (CR.brokeN >= 100) badge('lumber');
+  if (id === 16) badge('turq');
   if (id === 8 && Math.random() < .5) return;
   invAdd(b.drop, 1);
   pop('+1 ' + itemName(b.drop), pos.clone().setY(pos.y + .8), '#ffffff', .9, false);
@@ -3686,7 +3772,7 @@ function craftPlace(sx, sy){
   if (py < 1 || py >= VY - 1 || px < 0 || pz < 0 || px >= VX || pz >= VZ || vget(px, py, pz)){ sfx('nope'); return; }
   const bx = px + OX, bz = pz + OZ;
   if (P.x + .28 > bx && P.x - .28 < bx + 1 && P.z + .28 > bz && P.z - .28 < bz + 1 && P.y + 1.7 > py && P.y < py + 1){ toast('ماينفعش تبني مكان ما إنت واقف', 'warn', 1.2); return; }
-  setBlock(px, py, pz, id); invAdd(id, -1);
+  setBlock(px, py, pz, id); invAdd(id, -1); badge('block1');
   sfx('land'); burst(new THREE.Vector3(bx + .5, py + .5, bz + .5), 6, BL[id].col, {cube:true, size:.08, speed:1.5, up:2, life:.4});
 }
 function updateMining(dt){
@@ -3781,6 +3867,7 @@ function buildCraftScene(){
 }
 function enterCraft(){
   if (CR.on) return;
+  if (HUB.on) hubExit();
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
   audioInit();
@@ -3833,7 +3920,7 @@ function exitCraft(silent){
   $('menuBtn').textContent = '🎒 المقالب'; refreshMenu();
   if (openPanel === 'craft') togglePanel(null);
   Object.assign(P, {x:0, z:L - 8, y:0, vy:0, air:false}); player.g.rotation.y = Math.PI;
-  if (!silent) toast('رجعت الحارة. جزيرتك اتحفظت ✓', 'good', 2);
+  if (!silent) toast('جزيرتك اتحفظت ✓', 'good', 2);
   presenceDirty = true;
 }
 
@@ -3904,6 +3991,7 @@ function finishJoin(){
   CR.savedPos = av ? [av.x + 1, Math.max(av.y, 1) + 1.5, av.z + 1] : null;
   enterCraft(true);
   toast('دخلت جزيرة ' + J.name + '! 🏝️ أي حاجة تكسرها أو تبنيها بتظهر عند الكل', 'good', 3.5);
+  badge('friend');
 }
 function leaveGuest(){
   CR.guestOf = null; CR.guestName = null; CR.wid = CR.ownWid;
@@ -3936,7 +4024,7 @@ function guestTick(dt){
   const av = avatars.get(CR.guestOf);
   if (!av || av.mi !== CR.wid){
     CR.lostT = (CR.lostT || 0) + dt;
-    if (CR.lostT > 3){ CR.lostT = 0; const nm = CR.guestName || 'صاحب الجزيرة'; exitCraft(true); toast(nm + ' خرج من جزيرته، فرجعت الحارة', 'warn', 3.5); }
+    if (CR.lostT > 3){ CR.lostT = 0; const nm = CR.guestName || 'صاحب الجزيرة'; exitCraft(true); enterHub(); toast(nm + ' خرج من جزيرته، فرجعت الميدان', 'warn', 3.5); }
   } else {
     CR.lostT = 0;
     if (av.ct && Math.abs(av.ct - CR.time) > .01 && Math.abs(av.ct - CR.time) < .99) CR.time = av.ct;
@@ -4037,6 +4125,7 @@ const RHY = {   // 16 sixteenth-steps per bar: D doum, T tak, k ghost tak
 const TRACKS = {
   hara:   {name:'مقسوم الحارة', bpm:104, rhy:'maqsoum', maq:'hijaz',  root:293.66, lead:'mizmar', seed:11, riq:true,  bass:true},
   match:  {name:'مهرجان التحدي', bpm:126, rhy:'mahrag',  maq:'kurd',   root:220.00, lead:'synth',  seed:23, riq:true,  bass:true, clap:true},
+  midan:  {name:'بلدي الميدان',  bpm:100, rhy:'baladi',  maq:'rast',   root:293.66, lead:'mizmar', seed:53, riq:true,  bass:true},
   island: {name:'صعيدي الجزيرة', bpm:96,  rhy:'saidi',   maq:'rast',   root:261.63, lead:'ney',    seed:37, riq:false, bass:true},
   night:  {name:'ليل النيل',     bpm:70,  rhy:'soft',    maq:'bayati', root:293.66, lead:'oud',    seed:41, riq:false, bass:false},
 };
@@ -4132,7 +4221,7 @@ function musTick(){
     MUS.next += stepDur; MUS.step++;
   }
 }
-function musicWant(){ return CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
+function musicWant(){ return HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
 function applyMusicVol(){ if (MUS.bus && ac && !MUS.fade) MUS.bus.gain.setTargetAtTime(Math.max(.0001, (settings.music ?? .5)*.55), ac.currentTime, .2); }
 function musicStart(){
   if (!ac || MUS.bus) return;
@@ -4140,6 +4229,472 @@ function musicStart(){
   MUS.cur = null; MUS.want = musicWant(); MUS.fade = 1; MUS.fadeAt = ac.currentTime + .05;
   MUS.timer = setInterval(() => { try { MUS.want = musicWant(); musTick(); } catch(e){} }, 40);
 }
+
+/* =========================================================
+   «الميدان» — the Roblox-style lobby: portals, wallet, shop, badges, wheel, emotes
+   ========================================================= */
+const HUB = {on:false, root:null, obs:[], portals:[], booths:[], near:null, boardTex:null, boardKey:'', boardT:0, wheel3d:null, water:null};
+const PORTALS = [
+  {id:'craft',    icon:'🏝️', name:'جزيرة النيل',     col:'#2fae6f', go:() => requestMode('craft')},
+  {id:'alley',    icon:'😈', name:'الحارة المجنونة', col:'#ff5d8f', go:() => startGame(), desc:'الحارة الأصلية: مقالب في الجيران وفي صحابك، والجيران بيجروا وراكم.'},
+  {id:'beds',     icon:'🛏️', name:'حرب السراير',     col:'#e84b3c', go:() => requestMode('beds')},
+  {id:'obby',     icon:'🏁', name:'سباق الموانع',    col:'#ffc93c', go:() => requestMode('obby')},
+  {id:'flood',    icon:'🌊', name:'الحارة غرقت',     col:'#3a7bd5', go:() => requestMode('flood')},
+  {id:'balloons', icon:'💦', name:'حرب البلالين',    col:'#13a3b5', go:() => requestMode('balloons')},
+  {id:'chickens', icon:'🐔', name:'مطاردة الفراخ',   col:'#ff8a3d', go:() => requestMode('chickens')},
+  {id:'tycoon',   icon:'🧱', name:'مصنع الطوب',      col:'#9a8f86', soon:true, desc:'ابني مصنع طوب وكبّره لحد ما يبقى أكبر مصنع في الحارة.'},
+  {id:'mine',     icon:'⛏️', name:'كنز الهرم',       col:'#9a8f86', soon:true, desc:'احفر تحت الهرم طبقة ورا طبقة ومعاك جمل صغير بيحفر معاك.'},
+  {id:'boat',     icon:'⛵', name:'مركب الكنز',      col:'#9a8f86', soon:true, desc:'ابني مركب بالمكعبات وانزل بيه النيل وسط الصخور والدوّامات.'},
+  {id:'td',       icon:'🏰', name:'احمي الحارة',     col:'#9a8f86', soon:true, desc:'حط فوانيس ورشاشات وبيّاع ترمس قدام جيوش الوز.'},
+  {id:'mystery',  icon:'🕵️', name:'مين سرق الفول؟',  col:'#9a8f86', soon:true, desc:'سرّاق وشاويش وأهالي، والشاويش لازم يكشف السرّاق.'},
+];
+
+/* ---- wallet: «جنيه الحارة», kept on the device ---- */
+const WAL = {gn:Math.max(0, +store.get('hara-gn', 0) || 0)};
+function renderGn(){ $('gn').textContent = WAL.gn; const g2 = $('gn2'); if (g2) g2.textContent = WAL.gn; }
+function addGn(n, why){
+  WAL.gn = Math.max(0, WAL.gn + n); store.set('hara-gn', WAL.gn); renderGn(); presenceDirty = true;
+  if (n > 0 && why) toast('+' + n + ' 💰 ' + why, 'good', 2.2);
+  if (openPanel === 'shop') renderShop();
+}
+
+/* ---- badges ---- */
+const BADGES = {
+  hub:{ico:'🏛️', name:'زائر الميدان', d:'دخلت الميدان'},
+  prank1:{ico:'😈', name:'أول مقلب', d:'عملت أول مقلب'},
+  prank10:{ico:'🎭', name:'ملك المقالب', d:'عملت ٥٠ مقلب'},
+  win:{ico:'🏆', name:'بطل التحدي', d:'كسبت تحدي ضد صحابك'},
+  bed:{ico:'🛏️', name:'كاسر السراير', d:'فريقك كسب حرب السراير'},
+  obby:{ico:'🏁', name:'بطل الموانع', d:'وصلت خط النهاية'},
+  flood:{ico:'🌊', name:'ناجي من الغرق', d:'آخر واحد ناشف'},
+  chick:{ico:'🐔', name:'صياد الفراخ', d:'مسكت ١٠ فراخ في جولة'},
+  block1:{ico:'🧱', name:'أول طوبة', d:'بنيت أول مكعب'},
+  lumber:{ico:'🪓', name:'حطّاب', d:'كسرت ١٠٠ مكعب'},
+  turq:{ico:'💎', name:'لقيت الفيروز', d:'طلّعت فيروز من الأرض'},
+  ironpick:{ico:'⛏️', name:'أسطى حديد', d:'عملت أزمة حديد'},
+  friend:{ico:'🤝', name:'جدع', d:'دخلت جزيرة صاحبك'},
+  shop:{ico:'🛍️', name:'شيك', d:'اشتريت أول حاجة'},
+  lucky:{ico:'🎡', name:'محظوظ', d:'لفّيت عجلة الحظ'},
+};
+const BDG = new Set((store.get('hara-badges', []) || []).filter(b => BADGES[b]));
+function badge(id){
+  if (!BADGES[id] || BDG.has(id)) return;
+  BDG.add(id); store.set('hara-badges', [...BDG]);
+  setTimeout(() => { toast('🎖️ نيشان جديد: ' + BADGES[id].ico + ' ' + BADGES[id].name, 'good', 3.5); addGn(20); sfx('score'); }, 400);
+  presenceDirty = true;
+}
+let prankN = +store.get('hara-prankn', 0) || 0;
+function onPrankScored(){
+  if (MODE.id || CR.on) return;
+  prankN++; store.set('hara-prankn', prankN);
+  addGn(1);
+  if (prankN === 1) badge('prank1');
+  if (prankN >= 50) badge('prank10');
+}
+
+/* ---- shop & looks ---- */
+const SHOP = [
+  {id:'h_cap',   type:'hat',   name:'كاب أزرق',       ico:'🧢', price:40},
+  {id:'h_wool',  type:'hat',   name:'طاقية صوف',      ico:'🧶', price:50},
+  {id:'h_tarb',  type:'hat',   name:'طربوش',          ico:'🎩', price:60},
+  {id:'h_emma',  type:'hat',   name:'عمّة صعيدي',      ico:'👳', price:120},
+  {id:'h_crown', type:'hat',   name:'تاج فرعوني',      ico:'👑', price:250},
+  {id:'h_nemes', type:'hat',   name:'غطا راس فرعون',  ico:'🏺', price:400},
+  {id:'s_white', type:'shirt', name:'فانلة بيضا',      col:'#f4f1e8', price:30},
+  {id:'s_green', type:'shirt', name:'فانلة خضرا',      col:'#2fae6f', price:30},
+  {id:'s_blue',  type:'shirt', name:'فانلة زرقا',      col:'#3a7bd5', price:30},
+  {id:'s_yellow',type:'shirt', name:'فانلة صفرا',      col:'#ffc93c', price:40},
+  {id:'s_purple',type:'shirt', name:'فانلة بنفسجي',    col:'#8a5cf5', price:50},
+  {id:'s_black', type:'shirt', name:'فانلة سودا',      col:'#2b2b2b', price:60},
+  {id:'s_gold',  type:'shirt', name:'فانلة دهبي',      col:'#e3b341', price:180},
+  {id:'p_chick', type:'pet',   name:'كتكوت',          ico:'🐤', price:100},
+  {id:'p_cat',   type:'pet',   name:'قطة',            ico:'🐈', price:150},
+  {id:'p_goose', type:'pet',   name:'وزة',            ico:'🪿', price:200},
+  {id:'p_camel', type:'pet',   name:'جمل صغير',       ico:'🐪', price:350},
+];
+const SHOPI = Object.fromEntries(SHOP.map(i => [i.id, i]));
+const OWNED = new Set((store.get('hara-owned', []) || []).filter(i => SHOPI[i]));
+const LOOK = Object.assign({h:'', s:'', p:''}, store.get('hara-equip', {}));
+for (const k of ['h','s','p']) if (LOOK[k] && !OWNED.has(LOOK[k])) LOOK[k] = '';
+function hatMesh(id){
+  const g = new THREE.Group();
+  const C = (rt, rb, h, col, y, seg = 20) => put(g, M(new THREE.CylinderGeometry(rt, rb, h, seg), col, .04), 0, y, 0);
+  const Bx = (w, h, d, col, x, y, z) => put(g, M(box(w, h, d), col, .05), x, y, z);
+  switch (id){
+    case 'h_cap': C(.37,.37,.2,'#3a7bd5',.1); Bx(.5,.05,.34,'#3a7bd5',0,.04,.42); Bx(.1,.1,.1,'#ffffff',0,.24,0); break;
+    case 'h_wool': C(.36,.38,.3,'#e84b3c',.14); C(.385,.385,.08,'#ffffff',.02); put(g, M(sph(.12,10,8),'#ffffff',.06), 0, .36, 0); break;
+    case 'h_tarb': C(.24,.3,.42,'#c0182b',.21); put(g, new THREE.Mesh(box(.04,.3,.04), BLACK), .17, .3, -.12).rotation.z = .6; break;
+    case 'h_emma': C(.42,.4,.3,'#f7f4ec',.12); put(g, M(new THREE.SphereGeometry(.34,16,8,0,Math.PI*2,0,Math.PI/2),'#f7f4ec',.04), 0, .26, 0); Bx(.5,.06,.1,'#e2dccd',0,.12,.4); break;
+    case 'h_crown': C(.36,.36,.16,'#f4cf3a',.08); for (let i = 0; i < 6; i++){ const a = i/6*Math.PI*2; put(g, M(cone(.07,.2,4),'#f4cf3a',.06), Math.sin(a)*.3, .26, Math.cos(a)*.3); } Bx(.1,.1,.06,'#2ec4c0',0,.09,.37); break;
+    case 'h_nemes':
+      C(.37,.39,.22,'#3a5fcd',.06);
+      for (let i = 0; i < 3; i++) C(.375 + i*.005,.385 + i*.005,.04,'#f4cf3a',-.02 + i*.08);
+      for (const s of [-1,1]) Bx(.16,.62,.14,'#3a5fcd', s*.3,-.3,.12);
+      for (const s of [-1,1]) Bx(.17,.06,.15,'#f4cf3a', s*.3,-.2,.12);
+      Bx(.56,.5,.12,'#3a5fcd',0,-.18,-.3); Bx(.08,.14,.06,'#f4cf3a',0,.14,.38);
+      break;
+    default: return null;
+  }
+  g.traverse(o => { if (o.isMesh) o.castShadow = false; });
+  return g;
+}
+function camelMesh(){
+  const g = new THREE.Group(), col = '#c99a5b';
+  put(g, M(box(.5,.42,.9), col, .04, true), 0, .78, 0);
+  put(g, M(box(.32,.26,.36), shade(col, -.06), .04), 0, 1.08, -.05);
+  const nk = put(g, M(box(.16,.5,.16), col, .05), 0, 1.08, .48); nk.rotation.x = .35;
+  put(g, M(box(.22,.2,.38), col, .05), 0, 1.36, .66);
+  for (const s of [-1,1]) put(g, new THREE.Mesh(sph(.035,6,5), BLACK), s*.09, 1.42, .82);
+  for (const [x, z] of [[-.17,-.32],[.17,-.32],[-.17,.32],[.17,.32]]) put(g, M(box(.12,.6,.12), shade(col, -.1), .05), x, .3, z);
+  return g;
+}
+const PETS = new Map();
+function setPet(key, kind, owner){
+  const cur = PETS.get(key);
+  if (cur && cur.kind === kind && cur.owner === owner) return;
+  if (cur){ scene.remove(cur.g); PETS.delete(key); }
+  if (!kind) return;
+  const g = kind === 'p_cat' ? catMesh() : kind === 'p_goose' ? gooseMesh() : kind === 'p_camel' ? camelMesh() : chickenMesh();
+  g.scale.setScalar(kind === 'p_chick' ? .6 : .72);
+  const o = owner.g.position;
+  g.position.set(o.x + 1, o.y, o.z + 1); scene.add(g);
+  PETS.set(key, {g, kind, owner, x:o.x + 1, z:o.z + 1, ph:Math.random()*6});
+}
+function updatePets(dt){
+  for (const [key, p] of PETS){
+    const og = p.owner.g;
+    if (!og.parent){ scene.remove(p.g); PETS.delete(key); continue; }
+    p.g.visible = og.visible;
+    const r = og.rotation.y, k = p.owner.k || .92;
+    const tx = og.position.x - Math.sin(r)*1.3*k/.92 + Math.cos(r)*.9*k/.92, tz = og.position.z - Math.cos(r)*1.3*k/.92 - Math.sin(r)*.9*k/.92;
+    const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz);
+    if (d > 8){ p.x = tx; p.z = tz; }
+    else if (d > .15){ const s = Math.min(d, (2 + d*3)*dt); p.x += dx/d*s; p.z += dz/d*s; turnTo(p.g, dx, dz, dt, 10); p.ph += dt*14; }
+    p.g.position.set(p.x, og.position.y + Math.abs(Math.sin(p.ph))*.12*(d > .15 ? 1 : 0), p.z);
+    if (p.g.userData.wings) p.g.userData.wings.forEach((w, j) => w.rotation.z = (j ? -1 : 1)*(.3 + Math.sin(clock*20 + p.ph)*.3));
+  }
+}
+function applyLook(r, look, key){
+  const k = (look.h || '') + '|' + (look.s || '') + '|' + (look.p || '');
+  if (r.lookKey === k) return;
+  r.lookKey = k;
+  if (r.hatG){ r.head.remove(r.hatG); r.hatG = null; }
+  if (r.capG) r.capG.visible = !look.h;
+  const hat = look.h && SHOPI[look.h] ? hatMesh(look.h) : null;
+  if (hat){ hat.position.y = r.blocky ? .31 : .5; if (!r.blocky) hat.scale.setScalar(1.5); r.head.add(hat); r.hatG = hat; }
+  if (r.shirts){ const col = look.s && SHOPI[look.s] ? SHOPI[look.s].col : r.shirt0; r.shirts.forEach(m => m.material = toon(col)); }
+  setPet(key, look.p && SHOPI[look.p] ? look.p : '', r);
+}
+function saveLook(){ store.set('hara-equip', LOOK); applyLook(player, LOOK, 'me'); presenceDirty = true; }
+let shopTab = 'shop';
+function renderShop(){
+  renderGn();
+  $('tabShop').classList.toggle('on', shopTab === 'shop'); $('tabBadges').classList.toggle('on', shopTab === 'badges');
+  $('shopGrid').hidden = shopTab !== 'shop'; $('badgeGrid').hidden = shopTab !== 'badges';
+  const sg = $('shopGrid'); sg.textContent = '';
+  const groups = [['hat','🎩 على الراس'], ['shirt','👕 الفانلة'], ['pet','🐾 حيوان أليف']];
+  for (const [type, title] of groups){
+    const h = document.createElement('p'); h.className = 'ctitle'; h.textContent = title; sg.appendChild(h);
+    const row = document.createElement('div'); row.className = 'shopRow'; sg.appendChild(row);
+    for (const it of SHOP.filter(i => i.type === type)){
+      const own = OWNED.has(it.id), on = LOOK[type[0]] === it.id;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'si' + (on ? ' on' : '') + (!own && WAL.gn < it.price ? ' poor' : '');
+      const i = document.createElement('span'); i.className = 'i';
+      if (it.col){ i.textContent = ''; i.style.background = it.col; i.classList.add('sw'); } else i.textContent = it.ico;
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = it.name;
+      const pz = document.createElement('span'); pz.className = 'p'; pz.textContent = on ? 'لابسه ✓' : own ? 'البسه' : it.price + ' 💰';
+      b.append(i, n, pz);
+      b.addEventListener('click', () => shopClick(it));
+      row.appendChild(b);
+    }
+  }
+  const bg = $('badgeGrid'); bg.textContent = '';
+  const cnt = document.createElement('p'); cnt.className = 'bnote'; cnt.style.padding = '6px 0';
+  cnt.textContent = 'جمعت ' + BDG.size + ' من ' + Object.keys(BADGES).length + ' نيشان. كل نيشان بـ٢٠ 💰.'; bg.appendChild(cnt);
+  const grid = document.createElement('div'); grid.className = 'shopRow'; bg.appendChild(grid);
+  for (const [id, b_] of Object.entries(BADGES)){
+    const c = document.createElement('div'); c.className = 'si bd' + (BDG.has(id) ? ' on' : ' locked');
+    const i = document.createElement('span'); i.className = 'i'; i.textContent = BDG.has(id) ? b_.ico : '🔒';
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = b_.name;
+    const d = document.createElement('span'); d.className = 'p'; d.textContent = b_.d;
+    c.append(i, n, d); grid.appendChild(c);
+  }
+}
+function shopClick(it){
+  const slot = it.type[0];
+  if (OWNED.has(it.id)){ LOOK[slot] = LOOK[slot] === it.id ? '' : it.id; saveLook(); sfx('coin'); renderShop(); return; }
+  if (WAL.gn < it.price){ toast('محتاج ' + (it.price - WAL.gn) + ' 💰 كمان. العب التحديات واجمع جنيهات', 'warn', 2.5); sfx('nope'); return; }
+  addGn(-it.price); OWNED.add(it.id); store.set('hara-owned', [...OWNED]);
+  LOOK[slot] = it.id; saveLook();
+  toast('اشتريت ' + it.name + '! 🛍️', 'good', 2); sfx('score'); badge('shop');
+  burst(new THREE.Vector3(P.x, P.y + 2.4, P.z), 16, ['#ffc93c','#ff5d8f','#ffffff'], {cube:true, size:.1, speed:3, up:5});
+  renderShop();
+}
+
+/* ---- daily reward & wheel ---- */
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+function dailyReward(){
+  const st = store.get('hara-daily', null) || {}, t = today();
+  if (st.d === t) return;
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  const yd = y.getFullYear() + '-' + (y.getMonth() + 1) + '-' + y.getDate();
+  const streak = st.d === yd ? Math.min(30, (st.s || 1) + 1) : 1;
+  const amt = Math.min(100, 20 + streak*10);
+  store.set('hara-daily', {d:t, s:streak});
+  setTimeout(() => { addGn(amt); toast('🎁 مكافأة النهارده: +' + amt + ' 💰' + (streak > 1 ? ' (يوم ' + streak + ' ورا بعض!)' : ''), 'good', 4); sfx('score'); }, 1500);
+}
+const WHEEL = [{t:'+10', gn:10, w:20}, {t:'+25', gn:25, w:16}, {t:'+50', gn:50, w:8}, {t:'+5', gn:5, w:18}, {t:'+100', gn:100, w:3}, {t:'+15', gn:15, w:18}, {t:'🎩 طربوش', item:'h_tarb', w:5}, {t:'+30', gn:30, w:12}];
+const WHEEL_COLS = ['#ff5d8f','#ffc93c','#2fae6f','#3a7bd5','#e84b3c','#8a5cf5','#ff8a3d','#13a3b5'];
+let wheelRot = 0, spinning = false;
+(() => {
+  const w = $('wheel');
+  w.style.background = 'conic-gradient(' + WHEEL.map((_, i) => WHEEL_COLS[i] + ' ' + (i*45) + 'deg ' + ((i + 1)*45) + 'deg').join(',') + ')';
+  WHEEL.forEach((s, i) => {
+    const l = document.createElement('span'); l.className = 'wl'; l.textContent = s.t;
+    l.style.transform = 'rotate(' + (i*45 + 22.5) + 'deg) translateY(-78px) rotate(90deg)';
+    w.appendChild(l);
+  });
+})();
+function renderWheel(){
+  const free = store.get('hara-spin', '') !== today();
+  $('spinBtn').textContent = spinning ? 'بتلف…' : free ? 'لف العجلة (ببلاش النهارده)' : 'لف العجلة (٣٠ 💰)';
+  $('spinBtn').disabled = spinning;
+  $('wheelNote').textContent = free ? 'عندك لفّة ببلاش كل يوم.' : 'خدت لفّة النهارده. اللفّة الزيادة بـ٣٠ 💰.';
+}
+function spinWheel(){
+  if (spinning) return;
+  const free = store.get('hara-spin', '') !== today();
+  if (!free){ if (WAL.gn < 30){ toast('محتاج ٣٠ 💰 عشان تلف تاني', 'warn', 2); sfx('nope'); return; } addGn(-30); }
+  else store.set('hara-spin', today());
+  spinning = true; renderWheel(); sfx('spin');
+  const total = WHEEL.reduce((s, x) => s + x.w, 0);
+  let r = Math.random()*total, idx = 0;
+  for (; idx < WHEEL.length - 1; idx++){ r -= WHEEL[idx].w; if (r < 0) break; }
+  const target = 360 - (idx*45 + 22.5) + (Math.random() - .5)*30;
+  wheelRot = wheelRot - (wheelRot % 360) + 360*5 + target;
+  $('wheel').style.transform = 'rotate(' + wheelRot + 'deg)';
+  let ticks = 0; const tk = setInterval(() => { sfx('coin'); if (++ticks > 12) clearInterval(tk); }, 230);
+  setTimeout(() => {
+    spinning = false;
+    const s = WHEEL[idx];
+    if (s.item){
+      if (OWNED.has(s.item)){ addGn(60, 'الطربوش عندك، خد ٦٠ بداله'); }
+      else { OWNED.add(s.item); store.set('hara-owned', [...OWNED]); toast('كسبت ' + SHOPI[s.item].name + '! 🎉 البسه من المحل', 'good', 3); }
+    } else addGn(s.gn, 'من عجلة الحظ');
+    sfx('score'); badge('lucky'); renderWheel();
+  }, 3700);
+}
+
+/* ---- emotes ---- */
+const EMO = {laugh:'😂😂😂', cheer:'🙌 يااااه!', love:'❤️', angry:'😤'};
+let emN = 0;
+function doEmote(kind){
+  togglePanel(null);
+  if (kind === 'dance'){ P.dance = 3.5; sfx('drum'); }
+  else if (kind === 'wave'){ P.wave = 2.2; }
+  else {
+    P.em = kind + ':' + (++emN); bubbleOver(player.g.position, EMO[kind] || '🙂', 'me');
+    if (kind === 'cheer'){ P.vy = 7; P.air = true; burst(new THREE.Vector3(P.x, P.y + 2.6, P.z), 14, ['#ffc93c','#ff5d8f','#3a7bd5'], {cube:true, size:.1, speed:3, up:5}); }
+    if (kind === 'laugh') sfx('voice');
+  }
+  presenceDirty = true;
+}
+
+/* ---- the plaza ---- */
+function hubTex(){
+  return patternTex((x, n) => {
+    x.fillStyle = '#e9dcc2'; x.fillRect(0, 0, n, n);
+    for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++){
+      x.fillStyle = (i + j) % 2 ? '#dccbaa' : '#efe4cd'; x.fillRect(i*n/4 + 1, j*n/4 + 1, n/4 - 2, n/4 - 2);
+    }
+    x.fillStyle = '#c96f4a'; x.fillRect(n/2 - 3, 0, 6, n); x.fillRect(0, n/2 - 3, n, 6);
+  }, 64, 14, 14);
+}
+function boothMesh(title, col){
+  const g = new THREE.Group();
+  put(g, M(box(3.2, 1.1, 1.2), '#c08a52', .03, true), 0, .55, 0);
+  put(g, M(box(3.3, .1, 1.3), '#f7f2e6', .04), 0, 1.15, 0);
+  for (const sx of [-1.5, 1.5]) for (const sz of [-.5, .5]) put(g, M(box(.12, 2.8, .12), '#7a4b2a', .06, true), sx, 1.4, sz);
+  for (let i = 0; i < 7; i++){ const a = put(g, M(box(.5, .08, 1.7), i % 2 ? '#ffffff' : col, 0), -1.5 + i*.5, 2.9, .2); a.rotation.x = .3; }
+  const s = signMesh(textTex(title, {bg:col, fill:'#ffffff', size:76}), 3.2, .8); s.position.set(0, 3.55, .5); g.add(s);
+  return g;
+}
+function buildHub(){
+  const R = new THREE.Group(); HUB.root = R; HUB.obs = []; HUB.portals = []; HUB.booths = [];
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(27, 64), LitMat({map:hubTex()})); floor.rotation.x = -Math.PI/2; floor.position.y = .01; floor.receiveShadow = true; R.add(floor);
+  const grass = new THREE.Mesh(new THREE.CircleGeometry(80, 48), toon('#7cc06a')); grass.rotation.x = -Math.PI/2; grass.receiveShadow = true; R.add(grass);
+  // fountain + obelisk
+  put(R, M(cyl(3.2, 3.4, .7, 32), '#e3d6b4', 0, true), 0, .35, 0);
+  HUB.water = put(R, new THREE.Mesh(cyl(2.85, 2.85, .1, 32), new THREE.MeshLambertMaterial({color:'#4fb3f0', transparent:true, opacity:.85})), 0, .66, 0);
+  put(R, M(box(1.1, .6, 1.1), '#c9b98f', 0, true), 0, .9, 0);
+  const ob = put(R, M(new THREE.CylinderGeometry(.32, .55, 6, 4), '#e8d6a8', 0, true), 0, 4.2, 0); ob.rotation.y = Math.PI/4;
+  const tip = put(R, M(new THREE.ConeGeometry(.45, .8, 4), '#f4cf3a', 0, true), 0, 7.6, 0); tip.rotation.y = Math.PI/4;
+  HUB.obs.push({x:0, z:0, r:3.5});
+  // portals
+  PORTALS.forEach((pt, i) => {
+    const th = i/PORTALS.length*Math.PI*2 + Math.PI/PORTALS.length, rr = 19.5;
+    const g = new THREE.Group(); g.position.set(Math.sin(th)*rr, 0, Math.cos(th)*rr); g.rotation.y = th + Math.PI; R.add(g);
+    const col = pt.soon ? '#9a8f86' : pt.col;
+    for (const sx of [-1.6, 1.6]){ put(g, M(box(.7, 4.4, .7), shade(col, -.08), 0, true), sx, 2.2, 0); put(g, M(box(.9, .3, .9), '#f7f2e6', 0), sx, .15, 0); }
+    put(g, M(box(4.1, .7, .8), shade(col, -.15), 0, true), 0, 4.6, 0);
+    const pane = put(g, new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3.9), new THREE.MeshBasicMaterial({color:pt.soon ? '#5d5650' : col, transparent:true, opacity:.6, side:THREE.DoubleSide})), 0, 2.2, 0);
+    const sign = signMesh(textTex(pt.icon + ' ' + pt.name, {bg:pt.soon ? '#cfc8c0' : '#ffffff', fill:'#2b1a12', stroke:false, size:70}), 4.2, 1.05);
+    sign.position.set(0, 5.6, .45); g.add(sign);
+    if (pt.soon){ const lk = signMesh(textTex('🔒 قريبًا', {bg:'#2b1a12', fill:'#ffc93c', stroke:false, size:80}), 2, .5); lk.position.set(0, 2.2, .1); g.add(lk); }
+    for (const sx of [-1.6, 1.6]) HUB.obs.push({x:g.position.x + Math.cos(th)*sx*-1, z:g.position.z - Math.sin(th)*sx*-1, r:.6});
+    HUB.portals.push({pt, pane, x:Math.sin(th)*(rr - 1.2), z:Math.cos(th)*(rr - 1.2), ph:i});
+  });
+  // booths: shop, wheel, emotes are on the button
+  const shop = boothMesh('🛍️ محل الشكل', '#ff5d8f'); shop.position.set(-7, 0, 6); shop.rotation.y = Math.PI*.12; R.add(shop);
+  const wh = boothMesh('🎡 عجلة الحظ', '#2fae6f'); wh.position.set(7, 0, 6); wh.rotation.y = -Math.PI*.12; R.add(wh);
+  const wc = document.createElement('canvas'); wc.width = wc.height = 256;
+  { const x = wc.getContext('2d'); WHEEL.forEach((_, i) => { x.fillStyle = WHEEL_COLS[i]; x.beginPath(); x.moveTo(128, 128); x.arc(128, 128, 124, i*Math.PI/4, (i + 1)*Math.PI/4); x.fill(); }); x.fillStyle = '#fff'; x.beginPath(); x.arc(128, 128, 20, 0, Math.PI*2); x.fill(); }
+  HUB.wheel3d = new THREE.Mesh(new THREE.CircleGeometry(1.3, 32), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(wc), side:THREE.DoubleSide}));
+  HUB.wheel3d.position.set(0, 2.1, -.2); wh.add(HUB.wheel3d);
+  HUB.booths.push({kind:'shop', x:shop.position.x + .6, z:shop.position.z + 1.6}, {kind:'wheel', x:wh.position.x - .6, z:wh.position.z + 1.6});
+  HUB.obs.push({x:-7, z:6, r:1.6}, {x:7, z:6, r:1.6});
+  // hall of fame board behind the fountain
+  const bc = document.createElement('canvas'); bc.width = 512; bc.height = 384;
+  HUB.boardCanvas = bc; HUB.boardTex = new THREE.CanvasTexture(bc);
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 4.2), new THREE.MeshBasicMaterial({map:HUB.boardTex}));
+  board.position.set(0, 3.4, -9.6); R.add(board);
+  put(R, M(box(6, 4.6, .3), '#7a4b2a', 0, true), 0, 3.4, -9.8);
+  for (const sx of [-2.6, 2.6]) put(R, M(box(.3, 1.6, .3), '#7a4b2a', 0, true), sx, .8, -9.8);
+  HUB.obs.push({x:-2.6, z:-9.8, r:.5}, {x:2.6, z:-9.8, r:.5}, {x:0, z:-9.8, r:.5});
+  // a ring of houses, palms and lamps around the plaza
+  for (let i = 0; i < 18; i++){
+    const th = i/18*Math.PI*2, r = 32 + (i % 2)*2, h = 7 + (i*7 % 5);
+    const col = HOUSE_COLORS[i % HOUSE_COLORS.length];
+    const b = put(R, M(box(7, h, 5), col, 0, true), Math.sin(th)*r, h/2, Math.cos(th)*r); b.rotation.y = th;
+    for (let f = 0; f < Math.floor(h/3); f++) for (const wx of [-2, 0, 2]){
+      const w = put(b, M(box(1, 1.2, .1), '#2f4b6e', 0), wx, -h/2 + 1.9 + f*3, -2.55);
+      void w;
+    }
+  }
+  for (let i = 0; i < 12; i++){
+    const th = (i + .5)/12*Math.PI*2 + Math.PI/12, r = 24;
+    const x = Math.sin(th)*r, z = Math.cos(th)*r;
+    put(R, M(cyl(.18, .26, 4.5, 8), '#7a4b2a', 0, true), x, 2.25, z);
+    for (let k = 0; k < 6; k++){ const a = k/6*Math.PI*2; const l = put(R, M(box(1.8, .1, .5), '#3f9e45', 0, true), x + Math.sin(a)*.8, 4.4, z + Math.cos(a)*.8); l.rotation.y = a; l.rotation.z = .35; }
+    HUB.obs.push({x, z, r:.5});
+  }
+}
+function drawBoard(){
+  const rows = [{name:myNick, gn:WAL.gn, bd:BDG.size, me:true}];
+  for (const a of avatars.values()) if (a.mi === 2) rows.push({name:a.name, gn:a.gn || 0, bd:a.bd || 0});
+  rows.sort((a, b) => b.gn - a.gn);
+  const key = rows.map(r => r.name + r.gn + r.bd).join('|');
+  if (key === HUB.boardKey) return;
+  HUB.boardKey = key;
+  const x = HUB.boardCanvas.getContext('2d');
+  x.fillStyle = '#2f5e3a'; x.fillRect(0, 0, 512, 384);
+  x.strokeStyle = '#f4cf3a'; x.lineWidth = 10; x.strokeRect(8, 8, 496, 368);
+  x.direction = 'rtl'; x.textAlign = 'center'; x.fillStyle = '#ffc93c'; x.font = '52px Lalezar, Cairo, sans-serif';
+  x.fillText('🏆 لوحة الشرف', 256, 70);
+  x.font = '34px Lalezar, Cairo, sans-serif';
+  rows.slice(0, 5).forEach((r, i) => {
+    const y = 130 + i*52;
+    x.fillStyle = r.me ? '#ffe7a8' : '#ffffff'; x.textAlign = 'right';
+    x.fillText((i + 1) + '. ' + r.name, 480, y);
+    x.textAlign = 'left'; x.fillText(r.gn + ' 💰  ' + r.bd + ' 🎖️', 32, y);
+  });
+  HUB.boardTex.needsUpdate = true;
+}
+
+/* ---- enter / leave / per frame ---- */
+let HUB_HIDDEN = [];
+function enterHub(){
+  if (MODE.id) clearMode();
+  if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
+  if (CR.on) exitCraft(true);
+  if (HUB.on){ P.x = 0; P.z = 13; return; }
+  audioInit();
+  const nk = clean($('nickStart').value, 16); if (nk && nk !== myNick) setNick(nk);
+  resetGame();
+  if (!HUB.root) buildHub();
+  scene.add(HUB.root);
+  HUB_HIDDEN = ALLEY_OBJS.filter(o => o.visible); HUB_HIDDEN.forEach(o => o.visible = false);
+  cart.g.visible = false; setNeighborsVisible(false); targetRing.visible = doorRing.visible = false;
+  HUB.on = true; HUB.near = null; HUB.boardKey = '';
+  Object.assign(P, {x:0, z:13, y:0, vy:0, air:false}); player.g.rotation.y = Math.PI;
+  CAM.yaw = 0; CAM.pitch = .42; CAM.dist = 11;
+  ['start','over','results','pause'].forEach(x => $(x).hidden = true);
+  togglePanel(null);
+  $('hearts').hidden = true; $('hotbar').hidden = true; $('score').parentNode.hidden = true; $('coins').parentNode.hidden = true;
+  btnState = '';
+  G.running = true; G.paused = false;
+  toast('أهلًا في الميدان! 🏛️ امشي لأي بوابة عشان تدخلها', 'good', 3.2);
+  badge('hub'); dailyReward();
+  presenceDirty = true;
+}
+function hubExit(){
+  if (!HUB.on) return;
+  scene.remove(HUB.root);
+  HUB_HIDDEN.forEach(o => o.visible = true); HUB_HIDDEN = [];
+  cart.g.visible = true; setNeighborsVisible(true);
+  HUB.on = false; $('portalCard').hidden = true;
+  $('hearts').hidden = false; $('score').parentNode.hidden = false; $('coins').parentNode.hidden = false;
+  $('menuBtn').textContent = '🎒 المقالب'; btnState = ''; refreshMenu();
+  if (['shop','wheel','emote'].includes(openPanel)) togglePanel(null);
+  presenceDirty = true;
+}
+function hubPhysics(dt, mx, mz, mag, locked){
+  if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
+  for (const o of HUB.obs){ const dx = P.x - o.x, dz = P.z - o.z, d = Math.hypot(dx, dz), r = o.r + .4; if (d < r && d > .001){ P.x = o.x + dx/d*r; P.z = o.z + dz/d*r; } }
+  const rr = Math.hypot(P.x, P.z); if (rr > 25.5){ P.x *= 25.5/rr; P.z *= 25.5/rr; }
+  P.vy -= 24*dt; P.y += P.vy*dt;
+  if (P.y <= 0){ if (P.air && P.vy < -3){ player.sq = .72; sfx('land'); } P.y = 0; P.vy = 0; P.air = false; }
+}
+function hubButtons(){
+  targetRing.visible = doorRing.visible = false;
+  if (btnState !== 'hub'){
+    btnState = 'hub';
+    $('prankIco').textContent = '😀'; $('prankName').textContent = 'حركات';
+    $('menuBtn').hidden = false; $('menuBtn').textContent = '🛍️ المحل';
+  }
+  $('prank').classList.remove('dim'); $('prank').style.setProperty('--cd', '0');
+}
+function hubFrame(dt){
+  if (!HUB.on) return;
+  for (const p of HUB.portals) p.pane.material.opacity = p.pt.soon ? .45 : .45 + Math.sin(clock*3 + p.ph)*.18;
+  if (HUB.wheel3d) HUB.wheel3d.rotation.z += dt*.6;
+  if (HUB.water) HUB.water.position.y = .66 + Math.sin(clock*2)*.02;
+  if (Math.random() < dt*6) burst(new THREE.Vector3((Math.random() - .5)*.6, 1.4, (Math.random() - .5)*.6), 1, ['#9fd8ff','#ffffff'], {size:.08, speed:1.2, up:4, upMin:2.5, grav:9, life:.9});
+  HUB.boardT -= dt; if (HUB.boardT <= 0){ HUB.boardT = 1; drawBoard(); }
+  // portals & booths
+  let near = null;
+  for (const p of HUB.portals) if (Math.hypot(P.x - p.x, P.z - p.z) < 1.9){ near = {portal:p.pt}; break; }
+  if (!near) for (const b of HUB.booths) if (Math.hypot(P.x - b.x, P.z - b.z) < 2){ near = {booth:b.kind}; break; }
+  const key = near ? (near.portal ? 'p:' + near.portal.id : 'b:' + near.booth) : '';
+  if (key !== (HUB.nearKey || '')){
+    HUB.nearKey = key;
+    if (near && near.booth){ $('portalCard').hidden = true; togglePanel(near.booth); if (near.booth === 'shop') renderShop(); else renderWheel(); sfx('coin'); }
+    else if (near && near.portal) showPortalCard(near.portal);
+    else { $('portalCard').hidden = true; }
+  }
+}
+function showPortalCard(pt){
+  const M_ = MODES[pt.id];
+  $('pcIco').textContent = pt.icon; $('pcName').textContent = pt.name;
+  $('pcDesc').textContent = pt.desc || (M_ ? M_.desc : '');
+  const n = 1 + freeAvatars().length, need = M_ && M_.min > n;
+  const go = $('pcGo');
+  go.disabled = !!pt.soon || need;
+  go.textContent = pt.soon ? '🔒 قريبًا' : need ? 'محتاج ' + M_.min + ' لاعبين' : (M_ && !M_.craft && n > 1 ? 'ابدأ للكل (' + n + ')' : 'ادخل');
+  go.onclick = () => { if (pt.soon || need) return; $('portalCard').hidden = true; sfx('whistle'); pt.go(); };
+  $('portalCard').hidden = false; sfx('coin');
+}
+function freeAvatars(){ return [...avatars.values()].filter(a => !a.mi || a.mi === 2); }
+$('shopClose').addEventListener('click', () => togglePanel(null));
+$('wheelClose').addEventListener('click', () => togglePanel(null));
+$('emoteClose').addEventListener('click', () => togglePanel(null));
+$('tabShop').addEventListener('click', () => { shopTab = 'shop'; renderShop(); });
+$('tabBadges').addEventListener('click', () => { shopTab = 'badges'; renderShop(); });
+$('spinBtn').addEventListener('click', spinWheel);
+$('hubBtn').addEventListener('click', () => { if (MODE.id){ toast('خلّص التحدي الأول', 'warn', 1.5); return; } enterHub(); });
+for (const b of document.querySelectorAll('#emotePanel [data-em]')) b.addEventListener('click', () => doEmote(b.dataset.em));
+renderGn();
+applyLook(player, LOOK, 'me');
 
 /* scoreboard + timed match */
 function boardRows(){
@@ -4160,7 +4715,8 @@ function fillList(ol, rows){
 }
 function renderBoard(){
   const rows = boardRows(), mini = $('mini');
-  if (CR.on){ mini.hidden = false; mini.textContent = craftInfo(); }
+  if (HUB.on){ mini.hidden = false; mini.textContent = '🏛️ الميدان · 🎖️ ' + BDG.size + ' نيشان'; }
+  else if (CR.on){ mini.hidden = false; mini.textContent = craftInfo(); }
   else if (MODE.id){ mini.hidden = false; mini.textContent = modeInfo(); }
   else {
     mini.hidden = rows.length < 2;
@@ -4170,10 +4726,10 @@ function renderBoard(){
   fillList($('boardList'), rows);
   for (const b of $('modeGrid').children) b.classList.toggle('sel', b.dataset.id === modeSel);
   const live = !!(room && chatState.live), M_ = MODES[modeSel];
-  const n = 1 + [...avatars.values()].filter(a => !a.mi).length;
+  const n = 1 + freeAvatars().length;
   const busy = !!MODE.id || MATCH.on, need = M_.min > n && !M_.craft;
   $('matchBtn').disabled = busy || need;
-  $('matchBtn').textContent = busy ? 'فيه تحدّي شغال دلوقتي' : M_.craft ? (CR.on ? 'ارجع للحارة' : 'ادخل «' + M_.name + '»') : 'ابدأ «' + M_.name + '»' + (n > 1 ? ' للكل (' + n + ')' : '');
+  $('matchBtn').textContent = busy ? 'فيه تحدّي شغال دلوقتي' : M_.craft ? (CR.on ? 'ارجع للميدان' : 'ادخل «' + M_.name + '»') : 'ابدأ «' + M_.name + '»' + (n > 1 ? ' للكل (' + n + ')' : '');
   const il = $('islandList'), owners = M_.craft ? [...avatars.values()].filter(a => a.co && a.mi && !(CR.on && CR.wid === a.mi)) : [];
   const ik = owners.map(a => a.peer + a.name).join('|');
   if (il.dataset.k !== ik){
@@ -4188,6 +4744,7 @@ function respawn(){
   toast('اتمسكت ٣ مرات! رجعت للبداية -30', 'warn', 2.5);
 }
 function startMatch(by, dur){
+  if (HUB.on) hubExit();
   if (MODE.id) clearMode();
   audioInit();
   resetGame();
@@ -4205,6 +4762,7 @@ function endMatch(){
     const rows = boardRows();
     fillList($('resList'), rows);
     $('resTitle').textContent = rows[0] && rows[0].me ? 'إنت الكسبان!' : (rows[0] ? rows[0].name + ' كسب!' : 'التحدي خلص!');
+    const won = rows.length > 1 && rows[0].me; addGn(won ? 30 : 10, won ? 'كسبت سباق المقالب' : 'شاركت في السباق'); if (won) badge('win');
     if (G.score > best){ best = G.score; store.set('hara-best', best); }
     $('results').hidden = false; sfx('score');
   }, 900);
@@ -4219,7 +4777,7 @@ $('boardBtn').addEventListener('click', () => { togglePanel('board'); renderBoar
 $('boardClose').addEventListener('click', () => togglePanel(null));
 $('matchBtn').addEventListener('click', () => requestMode(modeSel));
 $('rematchBtn').addEventListener('click', () => { $('results').hidden = true; if (!G.running) startGame(); togglePanel('board'); renderBoard(); });
-$('soloBtn').addEventListener('click', () => { $('results').hidden = true; startGame(); });
+$('soloBtn').addEventListener('click', () => { $('results').hidden = true; enterHub(); });
 
 /* =========================================================
    LABELS
@@ -4279,6 +4837,7 @@ function frame(now){
   P.speed += (target - P.speed)*Math.min(1, dt*10);
   let gy = 0;
   if (CR.on){ if (G.running && dt > 0) craftPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
+  else if (HUB.on){ if (G.running && dt > 0) hubPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
   else {
   if (G.running && dt > 0){
     if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
@@ -4301,7 +4860,7 @@ function frame(now){
   if (P.speed > 6 && !P.air){ P.dustT -= dt; if (P.dustT <= 0){ P.dustT = .16; burst(new THREE.Vector3(P.x, gy+.1, P.z), 1, '#eadcc3', {size:.16, speed:.6, up:.6, grav:0, grow:1.6, life:.4}); } }
   player.g.position.set(P.x, P.y, P.z);
   if (P.throwT > 0) P.throwT -= dt;
-  animateRig(player, P.air ? 0 : P.speed, dt, (P.dance > 0 || P.float > 0 || P.blind > 0) ? 'up' : (P.throwT > 0 ? 'throw' : null));
+  animateRig(player, P.air ? 0 : P.speed, dt, (P.dance > 0 || P.float > 0 || P.blind > 0) ? 'up' : P.wave > 0 ? 'fist' : (P.throwT > 0 ? 'throw' : null));
   updatePlayerStatus(dt);
   if (P.air) { player.legs[0].rotation.x = -.6; player.legs[1].rotation.x = .3; }
   setMood(player, P.stun > 0 && P.fx !== 'slip' ? 'dizzy' : (P.inv > 0 || P.float > 0 || P.blind > 0 || P.slow > 0) ? 'shock' : 'happy');
@@ -4328,7 +4887,7 @@ function frame(now){
     for (const k in cds) if (cds[k] > 0) cds[k] = Math.max(0, cds[k] - dt);
     const hostNow = isHost();
     if (hostNow !== wasHost){ wasHost = hostNow; onRoleChange(hostNow); }
-    if (MODE.id || CR.on){}
+    if (MODE.id || CR.on || HUB.on){}
     else if (hostNow){ updateNeighbors(dt); updateCritters(dt); updateCart(dt); }
     else { updateNeighborsClient(dt); updateNetCritters(dt); }
     updateProjs(dt); updateTraps(dt);
@@ -4338,9 +4897,11 @@ function frame(now){
   updateAvatars(rdt);
   modeFrame(wdt, rdt);
   craftFrame(wdt);
+  hubFrame(rdt);
+  updatePets(rdt);
 
   // prank button state + target markers
-  if (CR.on) craftButtons(); else if (MODE.id) modeButtons(); else {
+  if (CR.on) craftButtons(); else if (HUB.on) hubButtons(); else if (MODE.id) modeButtons(); else {
   let ok = G.running ? selected.can() === true : false;
   if (G.coins < selected.cost) ok = false;
   const cdv = cds[selected.id] > 0 ? cds[selected.id]/selected.cd : 0;
@@ -4382,7 +4943,7 @@ function frame(now){
   let cx = tx + Math.sin(CAM.yaw)*cpi*dist, cy = ty + spi*dist, cz = tz + Math.cos(CAM.yaw)*cpi*dist;
   const lim = (pv, cv, lm) => Math.abs(cv) <= lm ? 1 : (Math.sign(cv)*lm - pv)/(cv - pv);
   if (CR.on){ const tc = craftCamClip(tx, ty, tz, cx, cy, cz); cx = tx + (cx - tx)*tc; cy = ty + (cy - ty)*tc; cz = tz + (cz - tz)*tc; }
-  else {
+  else if (!HUB.on){
     const tt = Math.max(.03, Math.min(lim(tx, cx, 5.25), lim(tz, cz, L + 2.5)));
     if (tt < 1 && ty + (cy - ty)*tt < 12.5){ cx = tx + (cx - tx)*tt; cy = ty + (cy - ty)*tt; cz = tz + (cz - tz)*tt; }
   }
@@ -4394,7 +4955,7 @@ function frame(now){
   sun.position.set(P.x + 14, 26 + lift, P.z + 8); sun.target.position.set(P.x, 0, P.z - 4);
 
   // ---- labels ----
-  if (!MODE.id && !CR.on) for (const n of neighbors){
+  if (!MODE.id && !CR.on && !HUB.on) for (const n of neighbors){
     const near = Math.hypot(n.x - P.x, n.z - P.z) < 16;
     n.tag.hidden = !near;
     if (near) placeEl(n.tag, n.p.g.position, 3.2);
