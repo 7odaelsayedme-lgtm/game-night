@@ -157,7 +157,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 #pcGo{font-family:var(--display);font-size:22px;background:var(--leaf);color:var(--paper);text-shadow:0 2px 0 var(--ink);border:3px solid var(--ink);border-radius:14px;padding:4px 16px;box-shadow:0 4px 0 var(--ink);cursor:pointer;white-space:nowrap}
 #pcGo:disabled{filter:grayscale(1);opacity:.6}
 #gnPill{background:#fff3c4}
-#minePanel,#shopPanel,#wheelPanel{right:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(440px,calc(100% - 32px));max-height:calc(100% - 250px)}
+#boatPanel,#minePanel,#shopPanel,#wheelPanel{right:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(440px,calc(100% - 32px));max-height:calc(100% - 250px)}
 #emotePanel{right:16px;bottom:calc(250px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100% - 32px))}
 .tabs{display:flex;gap:6px;padding:8px 12px 0}
 .tabs button{flex:1;font-family:var(--display);font-size:18px;border:2px solid var(--ink);border-radius:12px;padding:2px;background:var(--paper);color:var(--ink);cursor:pointer}
@@ -240,7 +240,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   #hotbar{bottom:calc(150px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px)}
   .hs{width:46px;height:46px}
   #craftPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:55%}
-  #minePanel,#shopPanel,#wheelPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:58%}
+  #boatPanel,#minePanel,#shopPanel,#wheelPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:58%}
   #portalCard{bottom:calc(150px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px)}
   #emotePanel{bottom:calc(220px + env(safe-area-inset-bottom,0px))}
   #modeGrid{grid-template-columns:1fr 1fr}
@@ -259,6 +259,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
     <div class="pill"><span class="coin"></span><span id="coins">20</span></div>
     <div class="pill" id="gnPill" title="جنيه الحارة">💰 <span id="gn">0</span></div>
     <div class="pill" id="tyPill" hidden style="background:#d9f5e3">💵 <span id="tyCash">0</span></div>
+    <div class="pill" id="btPill" hidden style="background:#fff1c2">🪙 <span id="btGold">0</span></div>
     <div class="pill" id="hearts"><span>♥</span><span>♥</span><span>♥</span></div>
     <div class="pill" id="timer" hidden>3:00</div>
     <div class="pill" id="mini" hidden></div>
@@ -288,6 +289,18 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 
 <div id="hotbar" dir="rtl" hidden></div>
 <div id="portalCard" dir="rtl" hidden><span class="pi" id="pcIco"></span><div class="pt"><b id="pcName"></b><small id="pcDesc"></small></div><button id="pcGo" type="button">ادخل</button></div>
+<section class="panel" id="boatPanel" dir="rtl" hidden>
+  <header><b>ورشة المركب</b><span class="pill" style="font-size:16px;box-shadow:none">🪙 <span id="btGold2">0</span></span><button class="x" id="boatClose" aria-label="اقفل">✕</button></header>
+  <div class="cscroll">
+    <p class="bnote" id="btStat" style="padding:4px 0;font-weight:700;color:var(--ink)"></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button type="button" class="rc ok" id="btAdd"><span class="o">➕ حط</span></button><button type="button" class="rc" id="btDel"><span class="o">➖ شيل</span></button></div>
+    <p class="ctitle">البلوكات</p><div id="btPal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px"></div>
+    <p class="bnote" style="padding:6px 0">دوس على المركب عشان تحط أو تشيل. الكرسي لازم يبقى فيه، ولو اتكسر هتقع في النيل، فاحميه بالحديد.</p>
+    <button type="button" class="rc ok" id="btGo" style="width:100%"><span class="o">🚤 انزل النيل</span></button>
+    <p class="ctitle">المحل</p><div id="btShop" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px"></div>
+    <button type="button" class="rc no" id="btClear" style="width:100%;margin-top:10px">🧹 ابدأ من طوف صغير</button>
+  </div>
+</section>
 <section class="panel" id="minePanel" dir="rtl" hidden>
   <header><b>الشنطة ومحل الأدوات</b><span class="pill" style="font-size:16px;box-shadow:none">💵 <span id="mineCash2">0</span></span><button class="x" id="mineClose" aria-label="اقفل">✕</button></header>
   <div class="cscroll">
@@ -1739,6 +1752,7 @@ const cds = {}; PRANKS.forEach(p => cds[p.id] = 0);
 let selected = PR[store.get('hara-prank', 'balloon')] || PR.balloon;
 
 function doPrank(){
+  if (BT.on) return btAction();
   if (TY.on) return tyGoHome();
   if (HUB.on) return togglePanel('emote');
   if (CR.on) return CR.kind === 'mine' ? mineUp() : craftToggle();
@@ -2012,7 +2026,7 @@ function bindBtn(el, fn){
 }
 bindBtn($('jump'), () => doJump());
 bindBtn($('prank'), () => doPrank());
-bindBtn($('menuBtn'), () => CR.on ? (CR.kind === 'mine' ? (togglePanel('mine'), renderMinePanel()) : (togglePanel('craft'), CR.invVer++)) : HUB.on ? togglePanel('shop') : TY.on ? togglePanel('emote') : MODE.id ? modeAction2() : togglePanel('prank'));
+bindBtn($('menuBtn'), () => CR.on ? (CR.kind === 'mine' ? (togglePanel('mine'), renderMinePanel()) : (togglePanel('craft'), CR.invVer++)) : HUB.on ? togglePanel('shop') : BT.on ? (BT.voy ? togglePanel('emote') : (togglePanel('boat'), renderBoatPanel())) : TY.on ? togglePanel('emote') : MODE.id ? modeAction2() : togglePanel('prank'));
 document.addEventListener('contextmenu', e => { if (!typing(e)) e.preventDefault(); });
 
 function doJump(){
@@ -2063,6 +2077,7 @@ function togglePanel(which){
   $('board').hidden = next !== 'board';
   $('craftPanel').hidden = next !== 'craft';
   $('minePanel').hidden = next !== 'mine';
+  $('boatPanel').hidden = next !== 'boat';
   $('shopPanel').hidden = next !== 'shop';
   $('wheelPanel').hidden = next !== 'wheel';
   $('emotePanel').hidden = next !== 'emote';
@@ -2126,6 +2141,7 @@ function resetGame(){
 }
 function startGame(){
   if (TY.on) tyExit();
+  if (BT.on) btExit();
   if (HUB.on) hubExit();
   if (CR.on) exitCraft(true);
   if (MODE.id) clearMode();
@@ -2272,11 +2288,13 @@ function syncAvatars(peers){
     av.ms = Math.max(-1e6, Math.min(1e6, +pp.ms || 0)); av.md = typeof pp.md === 'string' ? clean(pp.md, 14) : '';
     av.ty = clamp(+pp.y || 0, 0, 40);
     if (av.p.k !== (CR.on ? .72 : .92)) av.p.k = CR.on ? .72 : .92; av.sc = Math.max(0, Math.min(99999, pp.sc|0)); av.s = typeof pp.s === 'string' ? pp.s.slice(0,8) : '';
-    av.tx = clamp(+pp.x || 0, -WALK, WALK); av.tz = clamp(+pp.z || 0, -L, L); av.r = +pp.r || 0;
+    { const wide = (+pp.mi || 0) !== 0; av.tx = clamp(+pp.x || 0, wide ? -700 : -WALK, wide ? 700 : WALK); av.tz = clamp(+pp.z || 0, wide ? -700 : -L, wide ? 700 : L); } av.r = +pp.r || 0;
     av.name = clean(pp.n, 16) || 'لاعب'; av.tag.textContent = av.name;
     const wasOwner = av.co; av.co = pp.co ? 1 : 0; av.ct = clamp(+pp.ct || 0, 0, 1);
     if (av.co && !wasOwner && av.seen && !(CR.on && CR.wid === av.mi)) toast('🏝️ ' + av.name + ' فتح جزيرته! ادخلها من 🎮', 'good', 3.5);
     av.seen = true;
+    av.boat = Array.isArray(pp.bt) && typeof pp.bt[1] === 'string' && btDec(pp.bt[1]) ? [clamp(pp.bt[0]|0, -1, 3), pp.bt[1], pp.bt[2] ? 1 : 0, clamp(+pp.bt[3] || 0, -60, 60), clamp(+pp.bt[5] || 0, -5, 5), clamp(+pp.bt[4] || 0, -700, 60)] : null;
+    if (av.boat){ const b = av.boat; [b[4], b[5]] = [b[5], b[4]]; }
     av.tyc = Array.isArray(pp.ty) ? [clamp(pp.ty[0]|0, -1, 3), String(pp.ty[1] || '0').slice(0, 8), clamp(pp.ty[2]|0, 0, 99)] : null;
     av.gn = Math.max(0, Math.min(1e7, pp.gn|0)); av.bd = clamp(pp.bd|0, 0, 99);
     if (Array.isArray(pp.cs)){ const lk = {h:SHOPI[pp.cs[0]] ? pp.cs[0] : '', s:SHOPI[pp.cs[1]] ? pp.cs[1] : '', p:SHOPI[pp.cs[2]] ? pp.cs[2] : ''}; applyLook(av.p, lk, av.peer); }
@@ -2317,6 +2335,7 @@ function sendPresence(dt){
   const pres = {n:myNick, c:myColor, x:Math.round(P.x*100)/100, z:Math.round(P.z*100)/100, y:Math.round(P.y*10)/10, r:Math.round(player.g.rotation.y*100)/100, d:P.disguise > 0 ? 1 : 0, sc:G.score, s:playerStatus(), h:P.hidden ? 1 : 0, i:P.inv > 0 ? 1 : 0, v:document.hidden ? 0 : 1};
   if (MODE.id){ const sc = myModeScore(); Object.assign(pres, {mi:MODE.ep, ma:MODE.alive ? 1 : 0, mo:MODE.out ? 1 : 0, mf:MODE.finished ? 1 : 0, ms:sc.ms, md:sc.md}); }
   else Object.assign(pres, {mi:worldId(), ma:1, mo:0, mf:0, ms:0, md:''});
+  pres.bt = btPresence();
   pres.ty = TY.on ? [TY.plot, maskOf(TY.bought).toString(36), TY.rb] : 0;
   pres.cs = [LOOK.h || '', LOOK.s || '', LOOK.p || '']; pres.gn = WAL.gn; pres.bd = BDG.size; pres.em = P.em || '';
   pres.co = CR.on && !CR.guestOf && CR.kind !== 'mine' ? 1 : 0; pres.ct = CR.on ? Math.round(CR.time*1000)/1000 : 0;
@@ -2550,7 +2569,7 @@ function netBroadcast(dt){
   if (room && chatState.live && !isHost() && performance.now() - lastNbAt > 3500){
     staleHosts.set(hostId, Date.now()); electHost(room.peers()); lastNbAt = performance.now();
   }
-  if (!netHost() || MODE.id || CR.on || HUB.on || TY.on) return;
+  if (!netHost() || MODE.id || CR.on || HUB.on || TY.on || BT.on) return;
   popBudget = Math.min(10, popBudget + dt*8);
   nbT -= dt; if (nbT > 0) return; nbT = .1;
   shareAct({k:'nb',
@@ -2854,6 +2873,7 @@ function startMode(d, byName){
   const id = d.m, M_ = MODES[id];
   if (!M_ || id === 'pranks' || M_.craft) return;
   if (TY.on) tyExit();
+  if (BT.on) btExit();
   if (HUB.on) hubExit();
   if (CR.on) exitCraft(true);
   if (MODE.id) clearMode();
@@ -2945,7 +2965,7 @@ function onModeStart(d, from, who){
 function modeAvatars(){ return [...avatars.values()].filter(a => a.mi === MODE.ep && MODE.pl.includes(a.peer)); }
 function modeHostId(){ return [meId(), ...modeAvatars().map(a => a.peer)].sort()[0]; }
 const isModeHost = () => modeHostId() === meId();
-function worldId(){ return MODE.id ? MODE.ep : CR.on ? CR.wid : HUB.on ? 2 : TY.on ? 3 : 0; }
+function worldId(){ return MODE.id ? MODE.ep : CR.on ? CR.wid : HUB.on ? 2 : TY.on ? 3 : BT.on ? 5 : 0; }
 function myModeScore(){
   switch (MODE.id){
     case 'balloons': return {ms:MODE.score, md:MODE.score + ' 💥'};
@@ -3885,6 +3905,7 @@ function buildCraftScene(){
 function enterCraft(){
   if (CR.on) return;
   if (TY.on) tyExit();
+  if (BT.on) btExit();
   if (HUB.on) hubExit();
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
@@ -4121,7 +4142,7 @@ function craftFrame(dt){
     buildCraftScene(); scene.add(CR.root); craftRespawn(); CR.invVer++; craftSave();
     toast('جزيرة جديدة! 🏝️', 'good', 2);
   });
-  addEventListener('beforeunload', () => { if (CR.on) craftSave(); if (typeof TY !== 'undefined' && TY.on) tySave(); });
+  addEventListener('beforeunload', () => { if (CR.on) craftSave(); if (typeof TY !== 'undefined' && TY.on) tySave(); if (typeof BT !== 'undefined' && BT.on) btSave(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && CR.on) craftSave(); });
   addEventListener('keydown', e => {
     if (!CR.on || typing(e)) return;
@@ -4148,6 +4169,7 @@ const RHY = {   // 16 sixteenth-steps per bar: D doum, T tak, k ghost tak
 const TRACKS = {
   hara:   {name:'مقسوم الحارة', bpm:104, rhy:'maqsoum', maq:'hijaz',  root:293.66, lead:'mizmar', seed:11, riq:true,  bass:true},
   match:  {name:'مهرجان التحدي', bpm:126, rhy:'mahrag',  maq:'kurd',   root:220.00, lead:'synth',  seed:23, riq:true,  bass:true, clap:true},
+  boat:   {name:'موّال المركب',  bpm:92,  rhy:'maqsoum', maq:'bayati', root:220.00, lead:'ney',    seed:83, riq:true,  bass:true},
   mine:   {name:'صعيدي الهرم',   bpm:100, rhy:'saidi',   maq:'hijaz',  root:196.00, lead:'mizmar', seed:71, riq:false, bass:true},
   tycoon: {name:'ملفوف المصنع',  bpm:116, rhy:'baladi',  maq:'hijaz',  root:246.94, lead:'synth',  seed:61, riq:true,  bass:true, clap:true},
   midan:  {name:'بلدي الميدان',  bpm:100, rhy:'baladi',  maq:'rast',   root:293.66, lead:'mizmar', seed:53, riq:true,  bass:true},
@@ -4246,7 +4268,7 @@ function musTick(){
     MUS.next += stepDur; MUS.step++;
   }
 }
-function musicWant(){ return CR.on && CR.kind === 'mine' ? 'mine' : TY.on ? 'tycoon' : HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
+function musicWant(){ return BT.on ? 'boat' : CR.on && CR.kind === 'mine' ? 'mine' : TY.on ? 'tycoon' : HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
 function applyMusicVol(){ if (MUS.bus && ac && !MUS.fade) MUS.bus.gain.setTargetAtTime(Math.max(.0001, (settings.music ?? .5)*.55), ac.currentTime, .2); }
 function musicStart(){
   if (!ac || MUS.bus) return;
@@ -4269,7 +4291,7 @@ const PORTALS = [
   {id:'chickens', icon:'🐔', name:'مطاردة الفراخ',   col:'#ff8a3d', go:() => requestMode('chickens')},
   {id:'tycoon',   icon:'🧱', name:'مصنع الطوب',      col:'#c96f4a', go:() => enterTycoon(), desc:'خد أرض واشتري مكن بيطلّع طوب على سير. الطوب بيتحوّل فلوس تكبّر بيها مصنعك، ولما تخلّصه ابنيه من الأول بمكسب أكبر.'},
   {id:'mine',     icon:'⛏️', name:'كنز الهرم',       col:'#d9a441', go:() => enterMine(), desc:'احفر الحفرة اللي جنب الهرم طبقة ورا طبقة. املا شنطتك وبيعها، وطوّر أزمتك وشنطتك. تحت خالص فيه جعارين دهب وصناديق كنز.'},
-  {id:'boat',     icon:'⛵', name:'مركب الكنز',      col:'#9a8f86', soon:true, desc:'ابني مركب بالمكعبات وانزل بيه النيل وسط الصخور والدوّامات.'},
+  {id:'boat',     icon:'⛵', name:'مركب الكنز',      col:'#2ec4c0', go:() => enterBoat(), desc:'ابني مركبك بلوكة بلوكة وانزل بيه النيل. ١٠ مراحل فيها صخور وخشب عايم وتماسيح ودوّامات، وكل مرحلة بدهب تشتري بيه حديد وشراع وموتور.'},
   {id:'td',       icon:'🏰', name:'احمي الحارة',     col:'#9a8f86', soon:true, desc:'حط فوانيس ورشاشات وبيّاع ترمس قدام جيوش الوز.'},
   {id:'mystery',  icon:'🕵️', name:'مين سرق الفول؟',  col:'#9a8f86', soon:true, desc:'سرّاق وشاويش وأهالي، والشاويش لازم يكشف السرّاق.'},
 ];
@@ -4308,6 +4330,10 @@ const BADGES = {
   deep:{ico:'🕳️', name:'تحت خالص', d:'وصلت لطبقة البركاني'},
   scarab:{ico:'🪲', name:'الجعران الدهب', d:'لقيت جعران دهب'},
   treasure:{ico:'💎', name:'صياد الكنوز', d:'فتحت صندوق كنز'},
+  sailor:{ico:'⛵', name:'بحّار', d:'عدّيت أول مرحلة في النيل'},
+  captain:{ico:'🧭', name:'ريّس المركب', d:'وصلت المرحلة الخامسة'},
+  nile:{ico:'🏆', name:'كنز النيل', d:'وصلت لآخر النيل'},
+  shipwright:{ico:'🔨', name:'نجّار مراكب', d:'نزّلت مركب فيه ٣٠ بلوكة'},
 };
 const BDG = new Set((store.get('hara-badges', []) || []).filter(b => BADGES[b]));
 function badge(id){
@@ -4638,6 +4664,7 @@ function drawBoard(){
 let HUB_HIDDEN = [];
 function enterHub(){
   if (TY.on) tyExit();
+  if (BT.on) btExit();
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
   if (CR.on) exitCraft(true);
@@ -4951,6 +4978,7 @@ function pickPlot(){
 }
 function enterTycoon(){
   if (TY.on) return;
+  if (BT.on) btExit();
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
   if (CR.on) exitCraft(true);
@@ -5221,7 +5249,586 @@ function mineTick(dt){
 }
 function mineUp(){ P.x = MN.pad.x + rand(-.4, .4); P.z = MN.pad.z + .4; P.y = MTOP + .1; P.vy = 0; sfx('jump'); burst(new THREE.Vector3(P.x, P.y + 1, P.z), 14, ['#ffc93c','#ffffff'], {size:.12, speed:2, up:4}); }
 
-$('mineClose').addEventListener('click', () => togglePanel(null));
+$('mineClose').addEventListener('click', () => togglePanel(null));/* =========================================================
+   «مركب الكنز» — Build-a-Boat: build on your slip, sail the Nile through 10 stages
+   ========================================================= */
+const BTW = 5, BTD = 9, BTH = 3, BTN = BTW*BTD*BTH;
+const BTB = [null,
+  {id:'wood',   name:'خشب',         ico:'🪵', col:'#a8703f', hp:2,  buoy:1,   price:0},
+  {id:'bamboo', name:'بوص',          ico:'🎋', col:'#d6c46a', hp:1,  buoy:1.8, price:3},
+  {id:'stone',  name:'حجر',          ico:'🪨', col:'#9a9a9a', hp:5,  buoy:-.5, price:4},
+  {id:'iron',   name:'حديد',         ico:'🔩', col:'#6f7c88', hp:10, buoy:-.2, price:10},
+  {id:'gold',   name:'دهب',          ico:'🟨', col:'#f4cf3a', hp:6,  buoy:-.8, price:30},
+  {id:'sail',   name:'شراع',         ico:'⛵', col:'#f5f0e6', hp:2,  buoy:.2,  price:45,  speed:1},
+  {id:'motor',  name:'موتور',        ico:'⚙️', col:'#3a3f45', hp:4,  buoy:-.4, price:140, speed:2.4},
+  {id:'seat',   name:'كرسي الريّس',  ico:'🪑', col:'#e84b3c', hp:3,  buoy:.5,  price:0},
+];
+const BT_SL = 42, BT_ST = 10, BT_END = -BT_ST*BT_SL - 14, BT_X = 34;
+const SLIPS = [-24, -8, 8, 24], BT_SLIP_Z = 9, BT_WATER = -.55, BT_BASE = .25;
+const BT = {on:false, root:null, slip:-1, gold:0, inv:{}, lay:null, best:0, mode:'add', sel:1, voy:null, obs:[], others:new Map(), boatG:null, press:null, saveT:0, syncT:0, waterTex:null, slipSigns:[]};
+const bti = (x, y, z) => (y*BTD + z)*BTW + x;
+const btXYZ = i => [i % BTW, Math.floor(i/(BTW*BTD)), Math.floor(i/BTW) % BTD];
+const arN = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+function btDefault(){ const a = Array(BTN).fill(0); for (let x = 1; x <= 3; x++) for (let z = 2; z <= 6; z++) a[bti(x, 0, z)] = 1; a[bti(2, 1, 4)] = 8; return a; }
+function btEnc(a){
+  let s = '', run = 0;
+  const flush = () => { while (run > 0){ const k = Math.min(26, run); s += String.fromCharCode(96 + k); run -= k; } };
+  for (const v of a){ if (!v){ run++; continue; } flush(); s += v; }
+  flush(); return s;
+}
+function btDec(s){
+  if (typeof s !== 'string' || s.length > 400) return null;
+  const a = [];
+  for (const ch of s){
+    const c = ch.charCodeAt(0);
+    if (c >= 97 && c <= 122) for (let k = 0; k < c - 96; k++) a.push(0);
+    else if (c >= 49 && c <= 56) a.push(c - 48);
+    else return null;
+    if (a.length > BTN) return null;
+  }
+  while (a.length < BTN) a.push(0);
+  return a;
+}
+const btCount = (a, t) => a.reduce((n, v) => n + (v === t), 0);
+const btHave = t => t === 1 ? 999 : t === 8 ? 1 : (BT.inv[t] || 0);
+function btFixLay(){
+  for (let t = 2; t <= 8; t++){ let extra = btCount(BT.lay, t) - btHave(t); for (let i = BTN - 1; i >= 0 && extra > 0; i--) if (BT.lay[i] === t){ BT.lay[i] = 0; extra--; } }
+}
+(() => {
+  const s = store.get('hara-boat', null);
+  BT.lay = btDefault();
+  if (s && typeof s === 'object'){
+    BT.gold = Math.max(0, +s.g || 0); BT.best = clamp(s.best|0, 0, BT_ST + 1);
+    if (s.inv && typeof s.inv === 'object') for (let t = 2; t <= 7; t++) BT.inv[t] = clamp(s.inv[t]|0, 0, BTN);
+    const a = btDec(s.lay); if (a) BT.lay = a;
+  }
+  btFixLay();
+})();
+function btSave(){ store.set('hara-boat', {g:Math.floor(BT.gold), inv:BT.inv, lay:btEnc(BT.lay), best:BT.best}); }
+function btStats(a){
+  let n = 0, buoy = 0, sp = 0, sails = 0, motors = 0, seat = -1;
+  a.forEach((v, i) => {
+    if (!v) return;
+    const b = BTB[v]; n++; buoy += b.buoy;
+    if (v === 6 && sails < 4){ sails++; sp += b.speed; }
+    if (v === 7 && motors < 3){ motors++; sp += b.speed; }
+    if (v === 8) seat = i;
+  });
+  return {n, buoy, seat, speed:(4.2 + sp)*(n > 45 ? .85 : 1)};
+}
+
+/* ---- meshes ---- */
+const BTGEO = {cube:box(.96, .96, .96), half:box(.96, .4, .96), mast:box(.14, 2.6, .14), sail:box(1.5, 1.5, .06), motor:box(.9, .8, .9), prop:cyl(.32, .32, .08, 10), seat:box(.94, .42, .94), back:box(.94, .75, .16)};
+function btBlockMesh(t, shadow){
+  const b = BTB[t];
+  if (t === 6){
+    const g = new THREE.Group();
+    put(g, M(BTGEO.half, '#a8703f', 0, shadow), 0, -.28, 0);
+    put(g, M(BTGEO.mast, '#6b4423', 0, shadow), 0, 1.2, .25);
+    put(g, M(BTGEO.sail, b.col, 0, shadow, true), 0, 1.45, .15);
+    return g;
+  }
+  if (t === 7){
+    const g = new THREE.Group();
+    put(g, M(BTGEO.motor, b.col, 0, shadow), 0, -.05, 0);
+    put(g, M(box(.3, .3, .3), '#e84b3c', 0), 0, .45, 0);
+    const pr = put(g, M(BTGEO.prop, '#c9c9c9', 0), 0, -.25, .52); pr.rotation.x = Math.PI/2; g.userData.prop = pr;
+    return g;
+  }
+  if (t === 8){
+    const g = new THREE.Group();
+    put(g, M(BTGEO.seat, b.col, 0, shadow), 0, -.29, 0);
+    put(g, M(BTGEO.back, shade(b.col, -.1), 0, shadow), 0, .28, .39);
+    return g;
+  }
+  return M(BTGEO.cube, b.col, 0, shadow);
+}
+function btBuildBoat(a, shadow){
+  const g = new THREE.Group(), cells = {};
+  a.forEach((v, i) => {
+    if (!v) return;
+    const [x, y, z] = btXYZ(i);
+    const m = btBlockMesh(v, shadow); m.position.set(x - 2, y + .5, z - 4); g.add(m); cells[i] = m;
+  });
+  g.userData.cells = cells; return g;
+}
+function btRefreshBoat(){
+  if (BT.boatG) BT.root.remove(BT.boatG);
+  BT.boatG = null;
+  if (BT.slip < 0) return;
+  BT.boatG = btBuildBoat(BT.lay, true);
+  BT.boatG.position.set(SLIPS[BT.slip], BT_BASE, BT_SLIP_Z);
+  BT.root.add(BT.boatG);
+}
+
+/* ---- world ---- */
+function btGenObs(){
+  const r = mulberry(4242), O = [];
+  for (let s = 1; s <= BT_ST; s++){
+    const z0 = -(s - 1)*BT_SL - 9, z1 = -s*BT_SL + 6;
+    const zr = () => z1 + r()*(z0 - z1), xr = () => (r()*2 - 1)*(BT_X - 3);
+    for (let k = 0; k < 3 + s; k++) O.push({k:'rock', x:xr(), z:zr(), r:1 + r()*1.1, cd:0});
+    if (s >= 2) for (let k = 0; k < 1 + (s >> 1); k++) O.push({k:'log', x0:xr(), z:zr(), amp:4 + r()*8, sp:.4 + r()*.5, ph:r()*6, cd:0});
+    if (s >= 3) for (let k = 0; k < Math.ceil(s/3); k++) O.push({k:'croc', x0:xr(), z:zr(), amp:6 + r()*10, sp:.25 + r()*.3, ph:r()*6, cd:0});
+    if (s >= 4) for (let k = 0; k < (s - 2) >> 1; k++) O.push({k:'pool', x:xr(), z:zr(), r:3.2, cd:0});
+  }
+  for (const o of O) if (o.x0 !== undefined) o.x = o.x0;
+  return O;
+}
+function btObsMesh(o, poolTex){
+  if (o.k === 'rock'){ const m = M(sph(o.r, 8, 6), '#8d8478', 0, true); m.scale.y = .85; m.position.set(o.x, BT_WATER + .25, o.z); return m; }
+  if (o.k === 'log'){
+    const g = new THREE.Group(); g.position.set(o.x, BT_WATER + .15, o.z);
+    const m = put(g, M(cyl(.45, .45, 6, 10), '#7a4f2a', 0, true)); m.rotation.z = Math.PI/2;
+    for (const x of [-3.02, 3.02]){ const e = put(g, M(cyl(.42, .42, .05, 10), '#d9b27c', 0), x, 0, 0); e.rotation.z = Math.PI/2; }
+    return g;
+  }
+  if (o.k === 'croc'){
+    const g = new THREE.Group(); g.position.set(o.x, BT_WATER + .1, o.z);
+    const b = new THREE.Group(); g.add(b); g.userData.body = b;
+    put(b, M(box(2.6, .5, 1.1), '#4f7a3a', 0, true), 0, 0, 0);
+    put(b, M(box(1.2, .36, .8), '#5d8c45', 0, true), 1.85, -.04, 0);
+    put(b, M(box(1.1, .3, .5), '#4f7a3a', 0), -1.75, -.05, 0);
+    for (const z of [-.3, .3]){ put(b, M(sph(.14, 8, 6), '#ffffff', 0), 1.35, .32, z); put(b, M(sph(.07, 6, 4), '#1d1410', 0), 1.42, .36, z); }
+    for (let k = 0; k < 4; k++) put(b, M(box(.18, .16, .18), '#3f6a2e', 0), -.9 + k*.6, .3, 0);
+    return g;
+  }
+  const g = new THREE.Group(); g.position.set(o.x, BT_WATER + .04, o.z);
+  const d = put(g, new THREE.Mesh(new THREE.CircleGeometry(o.r, 28), new THREE.MeshBasicMaterial({map:poolTex, transparent:true, opacity:.85}))); d.rotation.x = -Math.PI/2; g.userData.disk = d;
+  return g;
+}
+function buildBoatWorld(){
+  BT.root = new THREE.Group();
+  const R = BT.root;
+  const sand = '#e3cf9b';
+  put(R, M(box(180, .5, 60), sand, 0), 0, -.25, 30).receiveShadow = true;
+  put(R, M(box(180, .4, 30), '#7cc06a', 0), 0, -.2, 70);
+  BT.waterTex = patternTex((x, n) => { x.fillStyle = '#3d9be0'; x.fillRect(0, 0, n, n); x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 3; for (let i = 0; i < 4; i++){ x.beginPath(); const y = i*n/4 + 6; x.moveTo(0, y); x.bezierCurveTo(n*.3, y - 6, n*.6, y + 6, n, y); x.stroke(); } }, 64, 12, 70);
+  const len = -BT_END + 60;
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(BT_X*2 + 30, len), new THREE.MeshLambertMaterial({map:BT.waterTex}));
+  water.rotation.x = -Math.PI/2; water.position.set(0, BT_WATER, -len/2 + 2); R.add(water);
+  for (const sx of [-1, 1]){
+    put(R, M(box(14, 1.4, len), sand, 0), sx*(BT_X + 7), -.6, -len/2 + 2);
+    put(R, M(box(30, 1, len), '#7cc06a', 0), sx*(BT_X + 29), -.4, -len/2 + 2);
+  }
+  // palms + houses along the banks
+  const trunk = cyl(.22, .34, 5, 7), crown = sph(1.7, 8, 6);
+  for (let z = -12; z > BT_END - 30; z -= 22) for (const sx of [-1, 1]){
+    const x = sx*(BT_X + 4 + ((z*7) % 5 + 5) % 5);
+    put(R, M(trunk, '#8b5a2b', 0), x, 2.4, z);
+    const c = put(R, M(crown, '#3f9a4a', 0), x, 5.1, z); c.scale.y = .45;
+  }
+  for (let z = -20, k = 0; z > BT_END - 30; z -= 34, k++) for (const sx of [-1, 1]){
+    const h = 5 + (k*3 % 5);
+    put(R, M(box(7, h, 6), HOUSE_COLORS[(k + (sx > 0 ? 2 : 0)) % HOUSE_COLORS.length], 0), sx*(BT_X + 19), h/2, z);
+  }
+  // stage gates
+  for (let s = 1; s <= BT_ST; s++){
+    const z = -s*BT_SL;
+    for (const sx of [-1, 1]) put(R, M(box(1.2, 10, 1.2), '#d9a441', 0, true), sx*(BT_X + 1.5), 4.5, z);
+    put(R, M(box(BT_X*2 + 4, .8, .8), '#d9a441', 0), 0, 9.4, z);
+    const sg = signMesh(textTex('المرحلة ' + arN(s) + ' · +' + arN(s*4) + ' 🪙', {bg:'#ffc93c', fill:'#2b1a12', stroke:false, size:80, w:768, h:128}), 15, 2.5);
+    sg.position.set(0, 7.7, z + .5); R.add(sg);
+  }
+  // the treasure island at the end
+  const iz = BT_END - 14;
+  put(R, M(cyl(14, 16, 1.2, 28), sand, 0), 0, -.3, iz).receiveShadow = true;
+  const chest = new THREE.Group(); chest.position.set(0, .3, iz); R.add(chest);
+  put(chest, M(box(3, 1.8, 2), '#8b5a2b', 0, true), 0, .9, 0);
+  put(chest, M(box(3.1, .5, 2.1), '#f4cf3a', 0, true), 0, 2, 0);
+  put(chest, M(box(.6, .6, .2), '#f4cf3a', 0), 0, 1.2, -1.05);
+  const fin = signMesh(textTex('🏆 كنز النيل', {bg:'#ffc93c', fill:'#2b1a12', stroke:false, size:80}), 8, 2); fin.position.set(0, 5.5, iz); R.add(fin);
+  for (const a of [0, 2, 4]) { const x = Math.sin(a)*9, z = iz + Math.cos(a)*9; put(R, M(trunk, '#8b5a2b', 0), x, 2.4, z); const c = put(R, M(crown, '#3f9a4a', 0), x, 5.1, z); c.scale.y = .45; }
+  // slips (one per player)
+  BT.slipSigns = SLIPS.map((sx, i) => {
+    put(R, M(box(6.4, .25, 10.4), '#8b5a2b', 0), sx, .12, BT_SLIP_Z).receiveShadow = true;
+    for (let k = -2; k <= 2; k++) put(R, M(box(6.4, .06, .12), '#6b4423', 0), sx, .27, BT_SLIP_Z + k*2);
+    put(R, M(box(.25, 1.6, .25), '#5d5650', 0), sx + 3.6, .8, BT_SLIP_Z + 5.6);
+    const s = signMesh(textTex('ورشة ' + arN(i + 1), {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:70}), 3.4, .85); s.position.set(sx + 3.6, 1.9, BT_SLIP_Z + 5.7); R.add(s);
+    return s;
+  });
+  const big = signMesh(textTex('⛵ مركب الكنز', {bg:'#2ec4c0', fill:'#ffffff', size:80}), 7, 1.75); big.position.set(0, 4.4, 22); R.add(big);
+  put(R, M(box(.3, 3.6, .3), '#5d5650', 0, true), 0, 1.8, 22);
+  const st = signMesh(textTex('🚩 البداية', {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:80}), 6, 1.5); st.position.set(0, 4.2, -2); R.add(st);
+  // obstacles (same seed for everyone)
+  const poolTex = patternTex((x, n) => {
+    x.fillStyle = '#1f5f9e'; x.beginPath(); x.arc(n/2, n/2, n/2, 0, 7); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 5; x.beginPath();
+    for (let a = 0; a < 18; a += .1){ const rr = a/18*n/2; x.lineTo(n/2 + Math.cos(a)*rr, n/2 + Math.sin(a)*rr); }
+    x.stroke();
+  }, 128, 1, 1);
+  BT.obs = btGenObs();
+  for (const o of BT.obs){ o.m = btObsMesh(o, poolTex); R.add(o.m); }
+}
+let BT_HIDDEN = [];
+function btPickSlip(){
+  const taken = new Set();
+  for (const a of avatars.values()) if (a.mi === 5 && a.boat) taken.add(a.boat[0]);
+  for (let i = 0; i < 4; i++) if (!taken.has(i)) return i;
+  return -1;
+}
+function btGoSlip(){
+  if (BT.slip < 0){ Object.assign(P, {x:0, z:18, y:0, vy:0}); return; }
+  Object.assign(P, {x:SLIPS[BT.slip] + 4.6, z:BT_SLIP_Z + 1, y:0, vy:0, air:false});
+  player.g.rotation.y = -Math.PI/2; CAM.yaw = Math.PI/2 - .5; CAM.pitch = .62; CAM.dist = 12;
+}
+function enterBoat(){
+  if (BT.on) return;
+  if (MODE.id) clearMode();
+  if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
+  if (CR.on) exitCraft(true);
+  if (HUB.on) hubExit();
+  if (TY.on) tyExit();
+  audioInit(); resetGame();
+  if (!BT.root) buildBoatWorld();
+  scene.add(BT.root);
+  BT_HIDDEN = ALLEY_OBJS.filter(o => o.visible); BT_HIDDEN.forEach(o => o.visible = false);
+  cart.g.visible = false; setNeighborsVisible(false); targetRing.visible = doorRing.visible = false;
+  BT.on = true; BT.voy = null; BT.slip = btPickSlip(); BT.mode = 'add';
+  btRefreshBoat(); btGoSlip();
+  if (BT.slip < 0) toast('الورش الأربعة مليانة. استنى لحد ما حد يخرج', 'warn', 3.5);
+  ['start','over','results','pause'].forEach(x => $(x).hidden = true); togglePanel(null);
+  $('hearts').hidden = true; $('score').parentNode.hidden = true; $('coins').parentNode.hidden = true; $('btPill').hidden = false;
+  btnState = ''; G.running = true; G.paused = false;
+  toast('أهلًا في مركب الكنز! ⛵ افتح 🧰 الورشة وابني مركبك', 'good', 3.5);
+  if (!store.get('hara-bthint', false)){ setTimeout(() => toast('دوس على المركب عشان تحط بلوكة، ولما يخلص دوس 🚤 انزل', '', 4.5), 3800); store.set('hara-bthint', true); }
+  presenceDirty = true;
+}
+function btExit(){
+  if (!BT.on) return;
+  if (BT.voy) btEndVoyage(true);
+  btSave();
+  scene.remove(BT.root);
+  for (const o of BT.others.values()) BT.root.remove(o.g);
+  BT.others.clear();
+  BT_HIDDEN.forEach(o => o.visible = true); BT_HIDDEN = [];
+  cart.g.visible = true; setNeighborsVisible(true);
+  BT.on = false; $('btPill').hidden = true;
+  if (openPanel === 'boat') togglePanel(null);
+  $('hearts').hidden = false; $('score').parentNode.hidden = false; $('coins').parentNode.hidden = false;
+  $('menuBtn').textContent = '🎒 المقالب'; btnState = ''; refreshMenu();
+  presenceDirty = true;
+}
+function btButtons(){
+  targetRing.visible = doorRing.visible = false;
+  const key = 'bt' + (BT.voy ? 'v' : 'b');
+  if (btnState !== key){
+    btnState = key;
+    $('prankIco').textContent = BT.voy ? '🏳️' : '🚤'; $('prankName').textContent = BT.voy ? 'ارجع' : 'انزل';
+    $('menuBtn').hidden = false; $('menuBtn').textContent = BT.voy ? '😀 حركات' : '🧰 الورشة';
+  }
+  $('prank').classList.remove('dim'); $('prank').style.setProperty('--cd', '0');
+}
+function btAction(){
+  if (BT.voy) return btEndVoyage(false, 'رجعت للورشة 🏳️');
+  btLaunch();
+}
+
+/* ---- building ---- */
+function btTap(sx, sy, rmv){
+  if (BT.slip < 0 || BT.voy) return;
+  if (Math.hypot(P.x - SLIPS[BT.slip], P.z - BT_SLIP_Z) > 16){ toast('قرّب من ورشتك الأول', 'warn', 1.5); return; }
+  const r = renderer.domElement.getBoundingClientRect();
+  const p = new THREE.Vector3((sx - r.left)/r.width*2 - 1, -(sy - r.top)/r.height*2 + 1, .5).unproject(camera);
+  const o = camera.position; let dx = p.x - o.x, dy = p.y - o.y, dz = p.z - o.z; const l = Math.hypot(dx, dy, dz) || 1; dx /= l; dy /= l; dz /= l;
+  const ox = SLIPS[BT.slip] - 2.5, oy = BT_BASE, oz = BT_SLIP_Z - 4.5;
+  let prev = -1, hit = -1;
+  for (let s = 0; s < 60; s += .04){
+    const gx = o.x + dx*s - ox, gy = o.y + dy*s - oy, gz = o.z + dz*s - oz;
+    const cx = Math.floor(gx), cy = Math.floor(gy), cz = Math.floor(gz);
+    if (gy < 0){ if (cx >= 0 && cx < BTW && cz >= 0 && cz < BTD) prev = bti(cx, 0, cz); break; }
+    if (cx < 0 || cx >= BTW || cz < 0 || cz >= BTD || cy >= BTH){ prev = -1; continue; }
+    const i = bti(cx, cy, cz);
+    if (BT.lay[i]){ hit = i; break; }
+    prev = i;
+  }
+  const remove = rmv || BT.mode === 'del';
+  if (remove){
+    if (hit < 0) return;
+    const t = BT.lay[hit]; BT.lay[hit] = 0;
+    const [x, y, z] = btXYZ(hit);
+    burst(new THREE.Vector3(ox + x + .5, oy + y + .5, oz + z + .5), 8, [BTB[t].col, shade(BTB[t].col, -.15)], {cube:true, size:.1, speed:2, up:3, life:.5});
+    sfx('pop');
+  } else {
+    if (prev < 0 || BT.lay[prev]) return;
+    const t = BT.sel;
+    if (btCount(BT.lay, t) >= btHave(t)){
+      if (t === 8) toast('عندك كرسي واحد بس. شيله من مكانه الأول', 'warn', 2);
+      else { toast('خلص ال' + BTB[t].name + '. اشتري تاني من 🧰 الورشة', 'warn', 2); }
+      sfx('nope'); return;
+    }
+    BT.lay[prev] = t; sfx('land');
+  }
+  btRefreshBoat(); btSave(); presenceDirty = true; renderBoatPanel();
+}
+function renderBoatPanel(){
+  if (openPanel !== 'boat') return;
+  $('btGold2').textContent = Math.floor(BT.gold);
+  const st = btStats(BT.lay);
+  $('btStat').textContent = '🧱 ' + st.n + ' بلوكة · 🛟 الطفو ' + st.buoy.toFixed(1) + (st.buoy <= 0 ? ' (هيغرق!)' : '') + ' · 💨 السرعة ' + st.speed.toFixed(1) + (st.seat < 0 ? ' · ⚠️ مفيش كرسي' : '');
+  $('btAdd').className = 'rc ' + (BT.mode === 'add' ? 'ok' : ''); $('btDel').className = 'rc ' + (BT.mode === 'del' ? 'ok' : '');
+  const pal = $('btPal'); pal.textContent = '';
+  const shop = $('btShop'); shop.textContent = '';
+  const card = (host, title, sub, cls, fn, sel) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'rc ' + cls;
+    if (sel) b.style.outline = '4px solid #ffc93c';
+    const o = document.createElement('span'); o.className = 'o'; o.textContent = title;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = sub;
+    b.append(o, n); b.addEventListener('click', fn); host.appendChild(b);
+  };
+  for (let t = 1; t <= 8; t++){
+    const b = BTB[t], used = btCount(BT.lay, t), have = btHave(t);
+    const sub = t === 1 ? 'ببلاش · ' + used + ' مستخدم' : t === 8 ? (used ? 'في المركب ✓' : 'لازم تحطه!') : used + ' / ' + have + ' · صلابة ' + b.hp;
+    card(pal, b.ico + ' ' + b.name, sub, have > used ? '' : 'no', () => { BT.sel = t; BT.mode = 'add'; sfx('pop'); renderBoatPanel(); }, BT.sel === t);
+  }
+  for (let t = 2; t <= 7; t++){
+    const b = BTB[t], n = t >= 6 ? 1 : 5, price = b.price*n, can = BT.gold >= price;
+    const what = t === 6 ? 'أسرع +١' : t === 7 ? 'أسرع +٢٫٤' : b.buoy > 1 ? 'خفيف وبيعوم' : b.hp >= 10 ? 'أقوى حاجة' : b.hp >= 5 ? 'تقيل وجامد' : 'زينة تلمع';
+    card(shop, b.ico + ' ' + b.name + ' ×' + arN(n), what + ' · ' + price + ' 🪙', can ? 'ok' : 'no', () => {
+      if (BT.gold < price){ sfx('nope'); toast('محتاج ' + Math.ceil(price - BT.gold) + ' 🪙 كمان. انزل النيل واكسب', 'warn', 2); return; }
+      BT.gold -= price; BT.inv[t] = (BT.inv[t] || 0) + n; BT.sel = t; BT.mode = 'add';
+      sfx('coin'); toast('اشتريت ' + b.name + ' ×' + arN(n) + ' ' + b.ico, 'good', 1.6); btSave(); renderBoatPanel();
+    });
+  }
+}
+
+/* ---- sailing ---- */
+function btLaunch(){
+  if (BT.slip < 0 || BT.voy) return;
+  const st = btStats(BT.lay);
+  if (st.seat < 0){ toast('محتاج تحط 🪑 كرسي الريّس في المركب', 'warn', 2.5); sfx('nope'); togglePanel('boat'); renderBoatPanel(); return; }
+  if (st.n < 4){ toast('المركب صغير أوي. حط ٤ بلوكات على الأقل', 'warn', 2.5); sfx('nope'); return; }
+  if (st.buoy <= 0){ toast('المركب تقيل وهيغرق! زوّد خشب أو بوص', 'warn', 2.5); sfx('nope'); return; }
+  if (openPanel === 'boat') togglePanel(null);
+  const lay = BT.lay.slice();
+  BT.voy = {x:SLIPS[BT.slip], z:-3, y:BT_WATER - .55, vx:0, vz:0, lay, hp:lay.map(v => v ? BTB[v].hp : 0), st, stage:0, gold:0, state:'sail', t:0, poolT:0};
+  BT.voy.cells = BT.boatG.userData.cells;
+  CAM.yaw = 0; CAM.pitch = .42; CAM.dist = 15;
+  if (st.n >= 30) badge('shipwright');
+  sfx('horn'); toast('يلا بينا! 🚤 حرّك يمين وشمال وابعد عن الصخر', 'good', 3);
+  btnState = ''; presenceDirty = true;
+}
+function btWorldCell(V, i){ const [x, y, z] = btXYZ(i); return [V.x + x - 2, V.y + y + .5, V.z + z - 4]; }
+function btDamage(V, i, d, why){
+  if (V.hp[i] <= 0 || V.state !== 'sail') return;
+  V.hp[i] -= d;
+  const [wx, wy, wz] = btWorldCell(V, i), t = V.lay[i], m = V.cells[i];
+  if (V.hp[i] > 0){ if (m) m.userData.hitT = .25; return; }
+  V.lay[i] = 0;
+  if (m){ BT.boatG.remove(m); delete V.cells[i]; }
+  burst(new THREE.Vector3(wx, wy, wz), 14, [BTB[t].col, shade(BTB[t].col, -.2), '#ffffff'], {cube:true, size:.13, speed:3, up:4, grav:14, life:.7});
+  sfx('crash');
+  V.st = btStats(V.lay); presenceDirty = true;
+  if (V.st.seat < 0) return btFail('الكرسي اتكسر ووقعت في النيل! 💦');
+  if (V.st.buoy <= 0){ V.state = 'sink'; V.t = 0; toast('المركب بيغرق! 🫧', 'warn', 2.5); sfx('splash'); }
+  if (why) pop(why, new THREE.Vector3(wx, wy + 1.2, wz), '#ffffff', 1, false);
+}
+function btHitCells(V, test, layers){
+  let best = -1, bd = 1e9;
+  for (const k in V.cells){
+    const i = +k; if (V.hp[i] <= 0) continue;
+    const [x, y, z] = btXYZ(i); if (y > layers) continue;
+    const d = test(V.x + x - 2, V.z + z - 4);
+    if (d < bd){ bd = d; best = i; }
+  }
+  return bd < 0 ? best : -1;
+}
+function btFail(msg){
+  const V = BT.voy; if (!V || V.state === 'fail' || V.state === 'done') return;
+  V.state = 'fail'; V.t = 0;
+  toast(msg, 'warn', 3); sfx('splash');
+  burst(new THREE.Vector3(P.x, BT_WATER + .2, P.z), 24, ['#ffffff','#bfe7ff','#5fb8ff'], {size:.12, speed:3, up:5, grav:14, life:.8});
+}
+function btSail(dt, sx, sz){
+  const V = BT.voy; V.t += dt;
+  const t = Date.now()/1000;
+  if (V.state === 'sail'){
+    const brake = clamp(sz, 0, 1);
+    V.vz += (V.st.speed*(1 - .7*brake) - V.vz)*Math.min(1, dt*.9);
+    V.vx += (sx*6.5 - V.vx)*Math.min(1, dt*3);
+    V.x = clamp(V.x + V.vx*dt, -BT_X + 2.6, BT_X - 2.6); V.z -= V.vz*dt;
+    V.y = BT_WATER - .55 + Math.sin(clock*2.2)*.06;
+    for (const o of BT.obs){
+      if (Math.abs(o.z - V.z) > 9 || Math.abs(o.x - V.x) > 12) continue;
+      if (o.cd > 0){ o.cd -= dt; if (o.k !== 'pool') continue; }
+      if (o.k === 'rock'){
+        const i = btHitCells(V, (x, z) => Math.hypot(x - o.x, z - o.z) - (o.r + .5), 1);
+        if (i >= 0){ o.cd = .6; btDamage(V, i, 3, '🪨'); V.vz = -2.5; V.vx += Math.sign(V.x - o.x || 1)*5; shake = .25; }
+      } else if (o.k === 'log' || o.k === 'croc'){
+        const half = o.k === 'log' ? 3 : 1.9;
+        const i = btHitCells(V, (x, z) => Math.hypot(Math.max(0, Math.abs(x - o.x) - half), z - o.z) - .95, o.k === 'log' ? 0 : 1);
+        if (i >= 0){ o.cd = o.k === 'log' ? .7 : 1; btDamage(V, i, o.k === 'log' ? 2 : 3, o.k === 'croc' ? '🐊 عضّة!' : '🪵'); V.vz *= .3; shake = .2; if (o.k === 'croc') sfx('boink'); }
+      } else if (o.k === 'pool'){
+        const d = Math.hypot(V.x - o.x, V.z - o.z);
+        if (d < o.r + 2){
+          V.vx += Math.sign(o.x - V.x)*9*dt; V.vz *= 1 - dt*.9;
+          if (o.cd <= 0){
+            o.cd = .7;
+            const live = Object.keys(V.cells).map(Number).filter(i => V.hp[i] > 0 && btXYZ(i)[1] === 0);
+            if (live.length) btDamage(V, live[(Math.random()*live.length)|0], 1, '🌀');
+            if (!o.warned){ o.warned = true; sfx('spin'); toast('دوّامة! 🌀 اطلع منها بسرعة', 'warn', 1.6); }
+          }
+        } else o.warned = false;
+      }
+      if (V.state !== 'sail') break;
+    }
+    const stg = Math.min(BT_ST, Math.floor(-V.z/BT_SL));
+    while (V.state === 'sail' && V.stage < stg){
+      V.stage++;
+      const g = V.stage*4; V.gold += g; BT.gold += g;
+      pop('+' + g + ' 🪙', new THREE.Vector3(P.x, P.y + 3, P.z), '#ffc93c', 1.5, false); sfx('coin');
+      toast('عدّيت المرحلة ' + arN(V.stage) + '! 🎉', 'good', 1.8);
+      addGn(3);
+      if (V.stage > BT.best){ BT.best = V.stage; }
+      if (V.stage >= 1) badge('sailor');
+      if (V.stage >= 5) badge('captain');
+      btSave(); presenceDirty = true;
+    }
+    if (V.z < BT_END){
+      V.state = 'done'; V.t = 0;
+      BT.gold += 200; V.gold += 200; BT.best = BT_ST + 1;
+      addGn(120, 'وصلت لكنز النيل! 🏆'); badge('nile'); sfx('score');
+      for (let k = 0; k < 4; k++) setTimeout(() => BT.voy && burst(new THREE.Vector3(V.x + rand(-4, 4), 6, V.z - 10 + rand(-3, 3)), 30, ['#ffc93c','#ff5d8f','#2ec4c0','#ffffff'], {cube:true, size:.14, speed:5, up:5, life:1.2}), k*350);
+      toast('🏆 وصلت لكنز النيل! +٢٠٠ 🪙', 'good', 4); btSave();
+    }
+  } else if (V.state === 'sink'){
+    V.y -= dt*.7; V.vz *= 1 - dt; V.z -= V.vz*dt;
+    if (V.t > 2.6) btFail('المركب غرق! 🫧');
+  } else if (V.state === 'done'){
+    V.vz *= 1 - dt*1.5; V.z -= V.vz*dt;
+    if (V.t > 4) btEndVoyage(false);
+  } else if (V.state === 'fail'){
+    V.y -= dt*.5;
+    if (V.t > 2.6) btEndVoyage(false);
+  }
+  BT.boatG.position.set(V.x, V.y, V.z);
+  BT.boatG.rotation.z = V.state === 'sail' ? -V.vx*.012 : BT.boatG.rotation.z;
+  const sc = V.st.seat >= 0 ? V.st.seat : -1;
+  if (V.state !== 'fail' && sc >= 0){
+    const [wx, wy, wz] = btWorldCell(V, sc);
+    P.x = wx; P.z = wz; P.y = wy - .55; P.vy = 0; P.air = false; P.speed = 0;
+    player.g.rotation.y = Math.PI;
+  } else { P.y = Math.max(BT_WATER - 1.4, P.y - dt*.8); P.speed = 0; }
+  void t;
+}
+function btEndVoyage(silent, msg){
+  const V = BT.voy; if (!V) return;
+  BT.voy = null;
+  if (!silent){
+    const tot = V.gold;
+    toast((msg ? msg + ' · ' : '') + 'وصلت المرحلة ' + arN(V.stage) + ' وكسبت ' + arN(tot) + ' 🪙', V.stage ? 'good' : '', 3.5);
+  }
+  btSave();
+  if (BT.on){ btRefreshBoat(); btGoSlip(); }
+  btnState = ''; presenceDirty = true;
+}
+function btPhysics(dt, mx, mz, mag, locked){
+  if (BT.voy){ btSail(dt, mx*mag, mz*mag); return; }
+  if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
+  for (const sx of SLIPS){
+    const hx = 2.9, hz = 4.9, dx = P.x - sx, dz = P.z - BT_SLIP_Z;
+    if (Math.abs(dx) < hx && Math.abs(dz) < hz){ if (hx - Math.abs(dx) < hz - Math.abs(dz)) P.x = sx + Math.sign(dx || 1)*hx; else P.z = BT_SLIP_Z + Math.sign(dz || 1)*hz; }
+  }
+  if (Math.abs(P.x) < .5 && Math.abs(P.z - 22) < .5){ P.x = Math.sign(P.x || 1)*.5; }
+  P.x = clamp(P.x, -42, 42); P.z = clamp(P.z, 1.2, 38);
+  P.vy -= 24*dt; P.y += P.vy*dt;
+  if (P.y <= 0){ if (P.air && P.vy < -3){ player.sq = .72; sfx('land'); } P.y = 0; P.vy = 0; P.air = false; }
+}
+function btFrame(dt){
+  if (!BT.on || dt <= 0) return;
+  BT.waterTex.offset.y += dt*.25;
+  const t = Date.now()/1000;
+  for (const o of BT.obs){
+    const near = Math.abs(o.z - P.z) < 120;
+    o.m.visible = near; if (!near) continue;
+    if (o.k === 'log' || o.k === 'croc'){
+      o.x = o.x0 + Math.sin(t*o.sp + o.ph)*o.amp; o.m.position.x = o.x;
+      if (o.k === 'croc'){ const dir = Math.cos(t*o.sp + o.ph) >= 0 ? 1 : -1; o.m.userData.body.scale.x = dir; o.m.userData.body.rotation.y = Math.sin(t*3 + o.ph)*.08; }
+      else o.m.rotation.x = t*.8;
+    } else if (o.k === 'pool') o.m.userData.disk.rotation.z = t*2.2;
+  }
+  // hit flash + sitting pose
+  const V = BT.voy;
+  if (V){
+    for (const k in V.cells){ const m = V.cells[k]; if (m.userData.hitT > 0){ m.userData.hitT -= dt; m.scale.setScalar(1 - Math.max(0, m.userData.hitT)*.6); } if (m.userData.prop) m.userData.prop.rotation.y += dt*20; }
+    if (V.state !== 'fail'){ for (const l of player.legs) l.rotation.x = -1.35; }
+    if (V.state === 'sail' && Math.random() < dt*6) burst(new THREE.Vector3(V.x + rand(-2, 2), BT_WATER + .1, V.z - 4.6), 1, ['#ffffff','#bfe7ff'], {size:.1, speed:1, up:1.5, grav:6, life:.5});
+  }
+  // who owns which slip + other players' boats
+  BT.syncT -= dt;
+  if (BT.syncT <= 0){
+    BT.syncT = .35;
+    const owners = {};
+    for (const a of avatars.values()) if (a.mi === 5 && a.boat && a.boat[0] >= 0) owners[a.boat[0]] = a;
+    const clash = owners[BT.slip];
+    if (BT.slip >= 0 && clash && clash.peer < meId() && !BT.voy){
+      BT.slip = btPickSlip(); btRefreshBoat(); btGoSlip(); toast('اتنقلت لورشة تانية', '', 2);
+    }
+    if (BT.slip < 0){ const s = btPickSlip(); if (s >= 0){ BT.slip = s; btRefreshBoat(); btGoSlip(); toast('فيه ورشة فضيت! دي بقت بتاعتك', 'good', 2.5); } }
+    BT.slipSigns.forEach((sg, i) => {
+      const a = owners[i], name = i === BT.slip ? myNick : a ? a.name : '';
+      const txt = name ? 'ورشة ' + name : 'ورشة ' + arN(i + 1);
+      const tx = sg.material.map; if (tx.text !== txt){ tx.text = txt; tx.draw(); }
+    });
+    const seen = new Set();
+    for (const a of avatars.values()){
+      if (a.mi !== 5 || !a.boat || !a.boat[1]) continue;
+      seen.add(a.peer);
+      let o = BT.others.get(a.peer);
+      if (!o || o.key !== a.boat[1]){
+        if (o) BT.root.remove(o.g);
+        const lay = btDec(a.boat[1]); if (!lay) continue;
+        const g = btBuildBoat(lay, false); BT.root.add(g);
+        const old = o; o = {g, key:a.boat[1], x:old ? old.x : a.boat[3], y:old ? old.y : a.boat[5], z:old ? old.z : a.boat[4]};
+        g.position.set(o.x, o.y, o.z);
+        BT.others.set(a.peer, o);
+      }
+      o.tx = a.boat[3]; o.ty = a.boat[5]; o.tz = a.boat[4];
+    }
+    for (const [k, o] of BT.others) if (!seen.has(k)){ BT.root.remove(o.g); BT.others.delete(k); }
+  }
+  for (const o of BT.others.values()){
+    const k = Math.min(1, dt*8), far = Math.hypot(o.tx - o.x, o.tz - o.z) > 30;
+    o.x = far ? o.tx : o.x + (o.tx - o.x)*k; o.y += (o.ty - o.y)*k; o.z = far ? o.tz : o.z + (o.tz - o.z)*k;
+    o.g.position.set(o.x, o.y, o.z);
+  }
+  $('btGold').textContent = Math.floor(BT.gold);
+  BT.saveT += dt; if (BT.saveT > 8){ BT.saveT = 0; btSave(); }
+}
+function btPresence(){
+  if (!BT.on) return 0;
+  const V = BT.voy;
+  if (V) return [BT.slip, btEnc(V.lay), 1, Math.round(V.x*10)/10, Math.round(V.z*10)/10, Math.round(V.y*10)/10];
+  if (BT.slip < 0) return 0;
+  return [BT.slip, btEnc(BT.lay), 0, SLIPS[BT.slip], BT_SLIP_Z, BT_BASE];
+}
+function btInfo(){
+  const V = BT.voy;
+  if (V) return '⛵ المرحلة ' + arN(V.stage) + '/' + arN(BT_ST) + ' · 🧱 ' + V.st.n + ' · 💨 ' + V.vz.toFixed(1) + ' · 🪙 +' + V.gold;
+  return '⛵ مركب الكنز · ' + (BT.slip >= 0 ? 'ورشة ' + arN(BT.slip + 1) : 'بتتفرج') + ' · أحسن مرحلة ' + arN(Math.min(BT.best, BT_ST)) + (BT.best > BT_ST ? ' 🏆' : '');
+}
+(() => {
+  const el = $('game');
+  el.addEventListener('pointerdown', e => {
+    if (!BT.on || BT.voy || !G.running) return;
+    if (BT.press){ BT.press.moved = true; return; }
+    BT.press = {id:e.pointerId, sx:e.clientX, sy:e.clientY, x:e.clientX, y:e.clientY, t0:performance.now(), moved:false, right:e.button === 2};
+  });
+  el.addEventListener('pointermove', e => { const p = BT.press; if (!p || p.id !== e.pointerId) return; p.x = e.clientX; p.y = e.clientY; if (Math.hypot(p.x - p.sx, p.y - p.sy) > 10) p.moved = true; });
+  const up = e => { const p = BT.press; if (!p || p.id !== e.pointerId) return; BT.press = null; if (BT.on && !BT.voy && !p.moved && performance.now() - p.t0 < 400) btTap(p.x, p.y, p.right); };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', () => { BT.press = null; });
+  $('boatClose').addEventListener('click', () => togglePanel(null));
+  $('btAdd').addEventListener('click', () => { BT.mode = 'add'; renderBoatPanel(); });
+  $('btDel').addEventListener('click', () => { BT.mode = 'del'; renderBoatPanel(); });
+  $('btGo').addEventListener('click', () => btLaunch());
+  let sure = false;
+  $('btClear').addEventListener('click', () => {
+    if (!sure){ sure = true; $('btClear').textContent = 'متأكد؟ دوس تاني'; setTimeout(() => { sure = false; $('btClear').textContent = '🧹 ابدأ من طوف صغير'; }, 3500); return; }
+    sure = false; $('btClear').textContent = '🧹 ابدأ من طوف صغير';
+    BT.lay = btDefault(); btRefreshBoat(); btSave(); presenceDirty = true; renderBoatPanel();
+  });
+})();
+
 /* scoreboard + timed match */
 function boardRows(){
   if (MODE.id) return modeRows().sort((a, b) => b.ms - a.ms).map(r => ({name:r.name, sc:r.md, me:r.id === meId()}));
@@ -5242,6 +5849,7 @@ function fillList(ol, rows){
 function renderBoard(){
   const rows = boardRows(), mini = $('mini');
   if (HUB.on){ mini.hidden = false; mini.textContent = '🏛️ الميدان · 🎖️ ' + BDG.size + ' نيشان'; }
+  else if (BT.on){ mini.hidden = false; mini.textContent = btInfo(); }
   else if (TY.on){ mini.hidden = false; mini.textContent = '🧱 مصنع الطوب · ' + (TY.plot >= 0 ? 'أرض ' + (TY.plot + 1) : 'بتتفرج') + ' · ' + TY.bought.size + '/' + TYI.length + ' مكنة'; }
   else if (CR.on){ mini.hidden = false; mini.textContent = craftInfo(); }
   else if (MODE.id){ mini.hidden = false; mini.textContent = modeInfo(); }
@@ -5272,6 +5880,7 @@ function respawn(){
 }
 function startMatch(by, dur){
   if (TY.on) tyExit();
+  if (BT.on) btExit();
   if (HUB.on) hubExit();
   if (MODE.id) clearMode();
   audioInit();
@@ -5335,7 +5944,7 @@ const CAM = {yaw:0, pitch:.48, dist:12, drag:false};
   el.addEventListener('pointermove', e => {
     const p = ptrs.get(e.pointerId); if (!p) return;
     const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
-    if (ptrs.size === 1){ moved += Math.abs(dx) + Math.abs(dy); if (!CR.on || moved > 10){ CAM.yaw -= dx*.0085*settings.sens; CAM.pitch = clamp(CAM.pitch + dy*.0055*settings.sens, .08, 1.3); } }
+    if (ptrs.size === 1){ moved += Math.abs(dx) + Math.abs(dy); if (!(CR.on || (BT.on && !BT.voy)) || moved > 10){ CAM.yaw -= dx*.0085*settings.sens; CAM.pitch = clamp(CAM.pitch + dy*.0055*settings.sens, .08, 1.3); } }
     else if (ptrs.size === 2 && pinch0){ const [a, b] = [...ptrs.values()]; CAM.dist = clamp(dist0*pinch0/Math.max(20, Math.hypot(a.x - b.x, a.y - b.y)), 3.5, 24); }
   });
   const up = e => {
@@ -5367,6 +5976,7 @@ function frame(now){
   if (CR.on){ if (G.running && dt > 0) craftPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
   else if (HUB.on){ if (G.running && dt > 0) hubPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
   else if (TY.on){ if (G.running && dt > 0) tyPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
+  else if (BT.on){ if (G.running && dt > 0) btPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
   else {
   if (G.running && dt > 0){
     if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
@@ -5416,7 +6026,7 @@ function frame(now){
     for (const k in cds) if (cds[k] > 0) cds[k] = Math.max(0, cds[k] - dt);
     const hostNow = isHost();
     if (hostNow !== wasHost){ wasHost = hostNow; onRoleChange(hostNow); }
-    if (MODE.id || CR.on || HUB.on || TY.on){}
+    if (MODE.id || CR.on || HUB.on || TY.on || BT.on){}
     else if (hostNow){ updateNeighbors(dt); updateCritters(dt); updateCart(dt); }
     else { updateNeighborsClient(dt); updateNetCritters(dt); }
     updateProjs(dt); updateTraps(dt);
@@ -5428,10 +6038,11 @@ function frame(now){
   craftFrame(wdt);
   hubFrame(rdt);
   tyFrame(wdt);
+  btFrame(wdt);
   updatePets(rdt);
 
   // prank button state + target markers
-  if (CR.on) craftButtons(); else if (HUB.on) hubButtons(); else if (TY.on) tyButtons(); else if (MODE.id) modeButtons(); else {
+  if (CR.on) craftButtons(); else if (HUB.on) hubButtons(); else if (TY.on) tyButtons(); else if (BT.on) btButtons(); else if (MODE.id) modeButtons(); else {
   let ok = G.running ? selected.can() === true : false;
   if (G.coins < selected.cost) ok = false;
   const cdv = cds[selected.id] > 0 ? cds[selected.id]/selected.cd : 0;
@@ -5473,7 +6084,7 @@ function frame(now){
   let cx = tx + Math.sin(CAM.yaw)*cpi*dist, cy = ty + spi*dist, cz = tz + Math.cos(CAM.yaw)*cpi*dist;
   const lim = (pv, cv, lm) => Math.abs(cv) <= lm ? 1 : (Math.sign(cv)*lm - pv)/(cv - pv);
   if (CR.on){ const tc = craftCamClip(tx, ty, tz, cx, cy, cz); cx = tx + (cx - tx)*tc; cy = ty + (cy - ty)*tc; cz = tz + (cz - tz)*tc; }
-  else if (!HUB.on && !TY.on){
+  else if (!HUB.on && !TY.on && !BT.on){
     const tt = Math.max(.03, Math.min(lim(tx, cx, 5.25), lim(tz, cz, L + 2.5)));
     if (tt < 1 && ty + (cy - ty)*tt < 12.5){ cx = tx + (cx - tx)*tt; cy = ty + (cy - ty)*tt; cz = tz + (cz - tz)*tt; }
   }
@@ -5485,7 +6096,7 @@ function frame(now){
   sun.position.set(P.x + 14, 26 + lift, P.z + 8); sun.target.position.set(P.x, 0, P.z - 4);
 
   // ---- labels ----
-  if (!MODE.id && !CR.on && !HUB.on && !TY.on) for (const n of neighbors){
+  if (!MODE.id && !CR.on && !HUB.on && !TY.on && !BT.on) for (const n of neighbors){
     const near = Math.hypot(n.x - P.x, n.z - P.z) < 16;
     n.tag.hidden = !near;
     if (near) placeEl(n.tag, n.p.g.position, 3.2);
