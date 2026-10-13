@@ -111,6 +111,9 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 .md.sel{background:#ffe7a8;box-shadow:inset 0 0 0 3px var(--pink)}
 #board .bnote{padding-top:4px;margin:0}
 #boardList{max-height:120px;flex:none}
+#islandList{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px}
+#islandList:empty{display:none}
+#islandList button{font-family:var(--display);font-size:17px;border:3px solid var(--ink);border-radius:12px;padding:3px 12px;background:#9fe3b8;color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--ink)}
 #boardList{list-style:none;margin:0;padding:8px 12px;overflow-y:auto;display:grid;gap:6px;touch-action:pan-y}
 #boardList li,#resList li{display:flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:12px;padding:4px 10px;background:var(--paper);font-weight:700}
 #boardList li.me,#resList li.me{background:#ffe7a8}
@@ -259,6 +262,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   <header><b>التحديات</b><button class="x" id="boardClose" aria-label="اقفل">✕</button></header>
   <div id="modeGrid"></div>
   <p class="bnote" id="boardNote"></p>
+  <div id="islandList"></div>
   <button id="matchBtn" type="button">ابدأ</button>
   <ol id="boardList"></ol>
 </section>
@@ -2190,6 +2194,9 @@ function syncAvatars(peers){
     if (av.p.k !== (CR.on ? .72 : .92)) av.p.k = CR.on ? .72 : .92; av.sc = Math.max(0, Math.min(99999, pp.sc|0)); av.s = typeof pp.s === 'string' ? pp.s.slice(0,8) : '';
     av.tx = clamp(+pp.x || 0, -WALK, WALK); av.tz = clamp(+pp.z || 0, -L, L); av.r = +pp.r || 0;
     av.name = clean(pp.n, 16) || 'لاعب'; av.tag.textContent = av.name;
+    const wasOwner = av.co; av.co = pp.co ? 1 : 0; av.ct = clamp(+pp.ct || 0, 0, 1);
+    if (av.co && !wasOwner && av.seen && !(CR.on && CR.wid === av.mi)) toast('🏝️ ' + av.name + ' فتح جزيرته! ادخلها من 🎮', 'good', 3.5);
+    av.seen = true;
     av.p.disguise.visible = !!pp.d; av.dg = pp.d ? 1 : 0; av.h = !!pp.h; av.inv = !!pp.i;
   }
   for (const [k, av] of avatars) if (!seen.has(k)){ scene.remove(av.p.g); if (av.bubble) scene.remove(av.bubble); av.tag.remove(); avatars.delete(k); }
@@ -2226,6 +2233,7 @@ function sendPresence(dt){
   const pres = {n:myNick, c:myColor, x:Math.round(P.x*100)/100, z:Math.round(P.z*100)/100, y:Math.round(P.y*10)/10, r:Math.round(player.g.rotation.y*100)/100, d:P.disguise > 0 ? 1 : 0, sc:G.score, s:playerStatus(), h:P.hidden ? 1 : 0, i:P.inv > 0 ? 1 : 0, v:document.hidden ? 0 : 1};
   if (MODE.id){ const sc = myModeScore(); Object.assign(pres, {mi:MODE.ep, ma:MODE.alive ? 1 : 0, mo:MODE.out ? 1 : 0, mf:MODE.finished ? 1 : 0, ms:sc.ms, md:sc.md}); }
   else Object.assign(pres, {mi:worldId(), ma:1, mo:0, mf:0, ms:0, md:''});
+  pres.co = CR.on && !CR.guestOf ? 1 : 0; pres.ct = CR.on ? Math.round(CR.time*1000)/1000 : 0;
   const s = JSON.stringify(pres);
   if (s === lastPres && !presenceDirty) return;
   lastPres = s; presenceDirty = false;
@@ -2369,12 +2377,13 @@ function playerStatus(){
 function onAct(msg){
   if (msg.sameTab) return;
   const d = msg.data || {}, k = d.k;
-  const bulk = k === 'nb' || k === 'pop' || k === 'say' || k === 'reward' || k === 'toast' || k === 'mst';
-  const key = msg.peer + (bulk ? ':b' : ''), now = Date.now(), arr = (actRate.get(key) || []).filter(t => now - t < 5000);
-  if (arr.length >= (bulk ? 140 : 40)) return;
+  const bulk = k === 'nb' || k === 'pop' || k === 'say' || k === 'reward' || k === 'toast' || k === 'mst' || k === 'csnap' || k === 'cblk';
+  const key = msg.peer + (k === 'csnap' ? ':s' : bulk ? ':b' : ''), now = Date.now(), arr = (actRate.get(key) || []).filter(t => now - t < 5000);
+  if (arr.length >= (k === 'csnap' ? 400 : bulk ? 140 : 40)) return;
   arr.push(now); actRate.set(key, arr);
   const from = avatars.get(msg.peer), who = from ? from.name : 'لاعب';
   if (['mstart','mst','mend','mko','bedhit','wall','wallhit','catch','caught','push'].includes(k)) return onModeMsg(k, d, msg, from, who);
+  if (k === 'cjoin' || k === 'csnap' || k === 'cblk') return onCraftMsg(k, d, msg, from, who);
   const sameWorld = !from || (from.mi || 0) === worldId();
   if (!sameWorld && (PVP_KINDS.includes(k) || k === 'trap' || k === 'gotcha' || k === 'np')) return;
   if (PVP_KINDS.includes(k)){
@@ -3500,9 +3509,10 @@ function buildChunk(cx, cz){
   CR.chunks[slot] = meshes;
 }
 function markDirty(x, z){ if (x < 0 || z < 0 || x >= VX || z >= VZ) return; CR.dirty.add(Math.floor(x/CS) + Math.floor(z/CS)*NCX); }
-function setBlock(x, y, z, id){
+function setBlock(x, y, z, id, remote){
   const i = vIdx(x, y, z);
   vox[i] = id; CR.edits.set(i, id);
+  if (!remote) shareBlock(i, id);
   for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) markDirty(x + dx, z + dz);
   if (id === 18) CR.lanterns.add(i); else CR.lanterns.delete(i);
 }
@@ -3741,6 +3751,12 @@ function craftLoad(){
   CR.lanterns = new Set(); for (let i = 0; i < vox.length; i++) if (vox[i] === 18) CR.lanterns.add(i);
 }
 function craftSave(){
+  if (CR.guestOf){
+    const s = store.get('hara-craft-v1', null);
+    if (s && s.v === 1){ s.inv = CR.inv; s.tool = CR.tool; store.set('hara-craft-v1', s); }
+    else store.set('hara-craft-v1', {v:1, seed:(Math.random()*1e6)|0, ed:[], inv:CR.inv, tool:CR.tool, time:.3, pos:null});
+    return;
+  }
   if (!vox) return;
   const ed = []; for (const [i, id] of CR.edits) ed.push(i, id);
   store.set('hara-craft-v1', {v:1, seed:CR.seed, ed, inv:CR.inv, tool:CR.tool, time:Math.round(CR.time*1000)/1000, pos:CR.on ? [r2(P.x), r2(P.y), r2(P.z)] : CR.savedPos});
@@ -3787,9 +3803,13 @@ function enterCraft(){
   $('hearts').hidden = true; $('hotbar').hidden = false;
   $('menuBtn').hidden = false; $('menuBtn').textContent = '🔨 الصناعة';
   CR.mode = 'mine'; CR.invVer++; btnState = '';
+  $('newWorld').hidden = !!CR.guestOf;
   G.running = true; G.paused = false;
   updateDayNight();
-  toast('أهلًا في جزيرة النيل! 🏝️', 'good', 2.5);
+  if (!CR.guestOf){
+    toast('أهلًا في جزيرة النيل! 🏝️', 'good', 2.5);
+    if (room && chatState.live && avatars.size) setTimeout(() => toast('صحابك يقدروا يدخلوا جزيرتك من 🎮', '', 3), 1800);
+  }
   if (!store.get('hara-crafthint', false)){
     setTimeout(() => toast('دوس مطوّل على أي مكعب عشان تكسره. ابدأ بجذع نخلة', '', 4.5), 2600);
     setTimeout(() => toast('زرار ⛏️ بيقلب لـ🧱 بنا: اختار مكعب من الشريط ودوس مكان ما عايز تحطه', '', 5), 7600);
@@ -3801,6 +3821,7 @@ function exitCraft(silent){
   if (!CR.on) return;
   craftSave();
   CR.savedPos = [r2(P.x), r2(P.y), r2(P.z)];
+  if (CR.guestOf) leaveGuest();
   scene.remove(CR.root);
   ALLEY_HIDDEN.forEach(o => o.visible = true); ALLEY_HIDDEN = [];
   cart.g.visible = true; setNeighborsVisible(true);
@@ -3815,6 +3836,113 @@ function exitCraft(silent){
   if (!silent) toast('رجعت الحارة. جزيرتك اتحفظت ✓', 'good', 2);
   presenceDirty = true;
 }
+
+/* ---- shared islands: the owner's device holds the island; friends join and edit it live ---- */
+CR.ownWid = CR.wid;
+const VN = VX*VY*VZ;
+const encEd = list => list.map(([i, id]) => i.toString(36) + ':' + id.toString(36)).join(',');
+function decEd(s){
+  const out = [];
+  if (typeof s !== 'string' || !s) return out;
+  for (const p of s.split(',')){
+    const [a, b] = p.split(':'), i = parseInt(a, 36), id = parseInt(b, 36);
+    if (i >= 0 && i < VN && (id === 0 || (BL[id] && id !== 20))) out.push([i, id]);
+  }
+  return out;
+}
+function shareBlock(i, id){
+  if (!(room && chatState.live && CR.on)) return;
+  for (const a of avatars.values()) if (a.mi === CR.wid){ shareAct({k:'cblk', w:CR.wid, i, b:id}); return; }
+}
+function applyRemoteBlock(i, id){ setBlock(i % VX, Math.floor(i/(VX*VZ)), Math.floor(i/VX) % VZ, id, true); }
+function loadInvFromSave(){
+  const s = store.get('hara-craft-v1', null);
+  CR.inv = {}; CR.tool = 0;
+  if (s && s.v === 1){
+    if (s.inv && typeof s.inv === 'object') for (const k of Object.keys(s.inv)){ const id = +k, n = s.inv[k]|0; if (n > 0 && (BL[id] || ITEMS[id])) CR.inv[id] = n; }
+    CR.tool = clamp(s.tool|0, 0, 4);
+  }
+  CR.invVer++;
+}
+function sendSnapshot(to){
+  const parts = []; let cur = [], len = 0;
+  for (const e of CR.edits){
+    const piece = e[0].toString(36).length + e[1].toString(36).length + 2;
+    if (len + piece > 3000){ parts.push(encEd(cur)); cur = []; len = 0; }
+    cur.push(e); len += piece;
+  }
+  parts.push(encEd(cur));
+  const n = parts.length;
+  const send = j => {
+    shareAct({k:'csnap', w:CR.wid, to, seed:CR.seed, t:Math.round(CR.time*1000)/1000, n, j, ed:parts[j]});
+    if (j + 1 < n) setTimeout(() => send(j + 1), 70);
+  };
+  send(0);
+}
+function joinIsland(av){
+  if (!av || !av.co || !(room && chatState.live)) return;
+  if (CR.on && CR.wid === av.mi) return;
+  const J = {owner:av.peer, name:av.name, w:av.mi, parts:[], got:0, n:0, buf:[]};
+  CR.joining = J;
+  shareAct({k:'cjoin', w:av.mi, to:av.peer});
+  toast('بيجيب جزيرة ' + av.name + '…', '', 2.5);
+  togglePanel(null);
+  setTimeout(() => { if (CR.joining === J){ CR.joining = null; toast('الجزيرة ماوصلتش. اتأكد إن ' + av.name + ' لسه جوه جزيرته وجرّب تاني', 'warn', 3.5); } }, 12000);
+}
+function finishJoin(){
+  const J = CR.joining; CR.joining = null;
+  if (CR.on) exitCraft(true);
+  CR.seed = J.seed; CR.time = J.t;
+  genWorld(CR.seed);
+  CR.edits = new Map();
+  for (const part of J.parts) for (const [i, id] of decEd(part)){ vox[i] = id; CR.edits.set(i, id); }
+  for (const [i, id] of J.buf){ vox[i] = id; CR.edits.set(i, id); }
+  CR.lanterns = new Set(); for (let i = 0; i < vox.length; i++) if (vox[i] === 18) CR.lanterns.add(i);
+  loadInvFromSave();
+  CR.guestOf = J.owner; CR.guestName = J.name; CR.wid = J.w; CR.built = false;
+  const av = avatars.get(J.owner);
+  CR.savedPos = av ? [av.x + 1, Math.max(av.y, 1) + 1.5, av.z + 1] : null;
+  enterCraft(true);
+  toast('دخلت جزيرة ' + J.name + '! 🏝️ أي حاجة تكسرها أو تبنيها بتظهر عند الكل', 'good', 3.5);
+}
+function leaveGuest(){
+  CR.guestOf = null; CR.guestName = null; CR.wid = CR.ownWid;
+  vox = null; CR.built = false; CR.savedPos = null;
+}
+function onCraftMsg(k, d, msg, from, who){
+  if (k === 'cjoin'){
+    if (CR.on && !CR.guestOf && d.w === CR.wid && d.to === meId()){ sendSnapshot(msg.peer); toast(who + ' داخل جزيرتك 👋', 'good', 2.5); }
+    return;
+  }
+  if (k === 'csnap'){
+    const J = CR.joining;
+    if (!J || d.to !== meId() || d.w !== J.w || msg.peer !== J.owner) return;
+    const n = clamp(d.n|0, 1, 400), j = d.j|0;
+    if (j < 0 || j >= n || J.parts[j] !== undefined) return;
+    J.n = n; J.seed = d.seed|0; J.t = clamp(+d.t || .3, 0, 1);
+    J.parts[j] = typeof d.ed === 'string' ? d.ed : ''; J.got++;
+    if (J.got === n) finishJoin();
+    return;
+  }
+  if (k === 'cblk'){
+    const i = d.i|0, b = d.b|0;
+    if (!(i >= 0 && i < VN) || !(b === 0 || (BL[b] && b !== 20))) return;
+    if (CR.joining && d.w === CR.joining.w && msg.peer !== undefined){ CR.joining.buf.push([i, b]); return; }
+    if (CR.on && vox && d.w === CR.wid && from && from.mi === CR.wid) applyRemoteBlock(i, b);
+  }
+}
+function guestTick(dt){
+  if (!CR.guestOf) return;
+  const av = avatars.get(CR.guestOf);
+  if (!av || av.mi !== CR.wid){
+    CR.lostT = (CR.lostT || 0) + dt;
+    if (CR.lostT > 3){ CR.lostT = 0; const nm = CR.guestName || 'صاحب الجزيرة'; exitCraft(true); toast(nm + ' خرج من جزيرته، فرجعت الحارة', 'warn', 3.5); }
+  } else {
+    CR.lostT = 0;
+    if (av.ct && Math.abs(av.ct - CR.time) > .01 && Math.abs(av.ct - CR.time) < .99) CR.time = av.ct;
+  }
+}
+
 function craftToggle(){
   if (!CR.on || !G.running) return;
   CR.mode = CR.mode === 'mine' ? 'build' : 'mine';
@@ -3832,8 +3960,10 @@ function craftButtons(){
   }
   $('prank').classList.remove('dim'); $('prank').style.setProperty('--cd', '0');
 }
-function craftInfo(){ return '🏝️ جزيرة النيل · ' + (CR.dl > .45 ? '☀️ نهار' : '🌙 ليل') + ' · 🛠️ ' + TOOL_NAME[CR.tool]; }
+function craftInfo(){ return '🏝️ ' + (CR.guestOf ? 'جزيرة ' + (CR.guestName || 'صاحبك') : 'جزيرة النيل') + ' · ' + (CR.dl > .45 ? '☀️ نهار' : '🌙 ليل') + ' · 🛠️ ' + TOOL_NAME[CR.tool]; }
 function craftFrame(dt){
+  if (!CR.on) return;
+  guestTick(dt);
   if (!CR.on) return;
   let n = 0;
   for (const c of CR.dirty){ CR.dirty.delete(c); buildChunk(c % NCX, Math.floor(c/NCX)); if (++n >= 2) break; }
@@ -4044,7 +4174,13 @@ function renderBoard(){
   const busy = !!MODE.id || MATCH.on, need = M_.min > n && !M_.craft;
   $('matchBtn').disabled = busy || need;
   $('matchBtn').textContent = busy ? 'فيه تحدّي شغال دلوقتي' : M_.craft ? (CR.on ? 'ارجع للحارة' : 'ادخل «' + M_.name + '»') : 'ابدأ «' + M_.name + '»' + (n > 1 ? ' للكل (' + n + ')' : '');
-  $('boardNote').textContent = M_.desc + (need ? ' محتاج ' + M_.min + ' لاعبين على الأقل، ' + (live ? 'ابعت الغرفة لصاحبك.' : 'ادخلوا غرفة واحدة الأول.') : '');
+  const il = $('islandList'), owners = M_.craft ? [...avatars.values()].filter(a => a.co && a.mi && !(CR.on && CR.wid === a.mi)) : [];
+  const ik = owners.map(a => a.peer + a.name).join('|');
+  if (il.dataset.k !== ik){
+    il.dataset.k = ik; il.textContent = '';
+    for (const a of owners){ const b = document.createElement('button'); b.type = 'button'; b.textContent = '🏝️ ادخل جزيرة ' + a.name; b.addEventListener('click', () => joinIsland(avatars.get(a.peer))); il.appendChild(b); }
+  }
+  $('boardNote').textContent = M_.desc + (M_.craft && CR.guestOf ? ' إنت دلوقتي ضيف في جزيرة ' + (CR.guestName || 'صاحبك') + '.' : '') + (need ? ' محتاج ' + M_.min + ' لاعبين على الأقل، ' + (live ? 'ابعت الغرفة لصاحبك.' : 'ادخلوا غرفة واحدة الأول.') : '');
 }
 function respawn(){
   setHearts(3); setScore(Math.max(0, G.score - 30));
