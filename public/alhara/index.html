@@ -246,6 +246,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
     <p>إنت الواد الشقي بتاع الحارة. اعمل مقالب في الجيران واجري قبل ما يمسكوك!</p>
     <ul>
       <li><b>العصا</b> للمشي، ودفعها للآخر = جري</li>
+      <li><b>اسحب على الشاشة</b> تلف الكاميرا، وبصباعين تقرّب وتبعّد</li>
       <li><b>🎒 المقالب</b> اختار المقلب، وزرار المقلب الكبير ينفّذه</li>
       <li><b>نط</b> عشان تفلت، و<b>💨 الدخان</b> و<b>🥸 التنكّر</b> بيضيّعوا الجار</li>
       <li><b>🎮</b> تحديات ضد صحابك: حرب السراير، سباق الموانع، والمزيد</li>
@@ -2009,6 +2010,7 @@ function startGame(){
   $('start').hidden = true; $('over').hidden = true; $('results').hidden = true;
   G.running = true; G.paused = false;
   toast('روح لأي جار واعمل مقلب! 🎒 فيها مقالب أكتر', '', 2.6);
+  if (!store.get('hara-camhint', false)) setTimeout(() => toast('اسحب صباعك على الشاشة عشان تلف الكاميرا، وبصباعين تقرّب وتبعّد', '', 4.5), 2800);
 }
 function gameOver(){
   G.running = false;
@@ -2727,6 +2729,7 @@ function startMode(d, byName){
   togglePanel(null);
   buildArena();
   modeSpawn();
+  CAM.yaw = (id === 'beds' && MODE.team === 'b') ? Math.PI : 0; CAM.pitch = .48;
   if (id === 'beds'){ player.ring = teamRing(MODE.team); player.g.add(player.ring); setCoins(6); }
   $('hearts').hidden = !(id === 'beds' || id === 'balloons'); setHearts(3);
   setScore(0);
@@ -3305,6 +3308,30 @@ function placeEl(el, pos, yOff){
    MAIN LOOP
    ========================================================= */
 const camPos = new THREE.Vector3(0, 9, L+3), camLook = new THREE.Vector3(0, 1, L-10);
+const CAM = {yaw:0, pitch:.48, dist:12, drag:false};
+(() => {
+  const el = $('game'), ptrs = new Map();
+  let pinch0 = 0, dist0 = 0, moved = 0;
+  el.addEventListener('pointerdown', e => {
+    try { el.setPointerCapture(e.pointerId); } catch(_){}
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (ptrs.size === 2){ const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); dist0 = CAM.dist; }
+    CAM.drag = true; audioInit();
+  });
+  el.addEventListener('pointermove', e => {
+    const p = ptrs.get(e.pointerId); if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    if (ptrs.size === 1){ CAM.yaw -= dx*.0085*settings.sens; CAM.pitch = clamp(CAM.pitch + dy*.0055*settings.sens, .08, 1.3); moved += Math.abs(dx) + Math.abs(dy); }
+    else if (ptrs.size === 2 && pinch0){ const [a, b] = [...ptrs.values()]; CAM.dist = clamp(dist0*pinch0/Math.max(20, Math.hypot(a.x - b.x, a.y - b.y)), 3.5, 24); }
+  });
+  const up = e => {
+    ptrs.delete(e.pointerId);
+    if (ptrs.size < 2) pinch0 = 0;
+    if (!ptrs.size){ CAM.drag = false; if (moved > 40 && !store.get('hara-camhint', false)) store.set('hara-camhint', true); moved = 0; }
+  };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  el.addEventListener('wheel', e => { e.preventDefault(); CAM.dist = clamp(CAM.dist*(1 + Math.sign(e.deltaY)*.1), 3.5, 24); }, {passive:false});
+})();
 let last = performance.now();
 function frame(now){
   const rdt = Math.min(.05, (now - last)/1000); last = now;
@@ -3318,7 +3345,7 @@ function frame(now){
   if (keys.KeyW || keys.ArrowUp) mz -= 1;   if (keys.KeyS || keys.ArrowDown) mz += 1;
   const ml = Math.hypot(mx, mz) || 1; const mag = Math.min(1, Math.hypot(mx, mz));
   mx /= ml; mz /= ml;
-  const cdir = camDir(); mx *= cdir; mz *= cdir;
+  { const cy_ = Math.cos(CAM.yaw), sy_ = Math.sin(CAM.yaw), wx = mx*cy_ + mz*sy_, wz = -mx*sy_ + mz*cy_; mx = wx; mz = wz; }
   const locked = P.stun > 0 || P.float > 0 || P.dance > 0 || (MODE.id && !MODE.alive);
   const target = G.running && mag > .08 && !locked ? (mag > .8 ? 7.4 : mag*6) * (P.slow > 0 ? .5 : 1) : 0;
   P.speed += (target - P.speed)*Math.min(1, dt*10);
@@ -3414,15 +3441,19 @@ function frame(now){
   for (const c of clouds){ c.position.x += dt*.8; if (c.position.x > 70) c.position.x = -70; }
 
   // ---- camera ----
-  const chasing = !MODE.id && neighbors.some(n => n.state === 'chase');
-  const cd_ = camDir(), lift = Math.max(0, P.y - .2);
+  // Roblox-style orbit camera: drag to turn, pinch / wheel to zoom, pulled in when a house is in the way
+  const lift = Math.max(0, P.y - .2);
   const portrait = host.clientWidth < host.clientHeight;
-  const back = (chasing ? 13 : 11) + (portrait ? 2 : 0), high = chasing ? 10 : 9;
-  camPos.lerp(v3.set(P.x*.55, high + lift*.8, P.z + back*cd_), Math.min(1, rdt*3.5));
+  const dist = CAM.dist*(portrait ? 1.15 : 1), tx = P.x, ty = P.y + 1.8, tz = P.z;
+  const cpi = Math.cos(CAM.pitch), spi = Math.sin(CAM.pitch);
+  let cx = tx + Math.sin(CAM.yaw)*cpi*dist, cy = ty + spi*dist, cz = tz + Math.cos(CAM.yaw)*cpi*dist;
+  const lim = (pv, cv, lm) => Math.abs(cv) <= lm ? 1 : (Math.sign(cv)*lm - pv)/(cv - pv);
+  const tt = Math.max(.03, Math.min(lim(tx, cx, 5.25), lim(tz, cz, L + 2.5)));
+  if (tt < 1 && ty + (cy - ty)*tt < 12.5){ cx = tx + (cx - tx)*tt; cy = ty + (cy - ty)*tt; cz = tz + (cz - tz)*tt; }
+  camPos.lerp(v3.set(cx, cy, cz), Math.min(1, rdt*(CAM.drag ? 28 : 12)));
   camera.position.copy(camPos);
   if (shake > 0){ shake -= rdt; camera.position.x += (Math.random()-.5)*shake; camera.position.y += (Math.random()-.5)*shake; }
-  const lookAhead = Math.sin(player.g.rotation.y)*1.5;
-  camLook.lerp(v3.set(P.x*.8 + lookAhead*.5, 1.4 + lift*.9, P.z + (-3 + (portrait && openPanel ? 3 : 0))*cd_), Math.min(1, rdt*5));
+  camLook.lerp(v3.set(tx, ty, tz), Math.min(1, rdt*14));
   camera.lookAt(camLook);
   sun.position.set(P.x + 14, 26 + lift, P.z + 8); sun.target.position.set(P.x, 0, P.z - 4);
 
