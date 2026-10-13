@@ -157,7 +157,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 #pcGo{font-family:var(--display);font-size:22px;background:var(--leaf);color:var(--paper);text-shadow:0 2px 0 var(--ink);border:3px solid var(--ink);border-radius:14px;padding:4px 16px;box-shadow:0 4px 0 var(--ink);cursor:pointer;white-space:nowrap}
 #pcGo:disabled{filter:grayscale(1);opacity:.6}
 #gnPill{background:#fff3c4}
-#shopPanel,#wheelPanel{right:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(440px,calc(100% - 32px));max-height:calc(100% - 250px)}
+#minePanel,#shopPanel,#wheelPanel{right:16px;top:calc(env(safe-area-inset-top,0px) + 74px);width:min(440px,calc(100% - 32px));max-height:calc(100% - 250px)}
 #emotePanel{right:16px;bottom:calc(250px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100% - 32px))}
 .tabs{display:flex;gap:6px;padding:8px 12px 0}
 .tabs button{flex:1;font-family:var(--display);font-size:18px;border:2px solid var(--ink);border-radius:12px;padding:2px;background:var(--paper);color:var(--ink);cursor:pointer}
@@ -240,7 +240,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
   #hotbar{bottom:calc(150px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px)}
   .hs{width:46px;height:46px}
   #craftPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:55%}
-  #shopPanel,#wheelPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:58%}
+  #minePanel,#shopPanel,#wheelPanel{top:calc(env(safe-area-inset-top,0px) + 112px);max-height:58%}
   #portalCard{bottom:calc(150px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px)}
   #emotePanel{bottom:calc(220px + env(safe-area-inset-bottom,0px))}
   #modeGrid{grid-template-columns:1fr 1fr}
@@ -288,6 +288,14 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
 
 <div id="hotbar" dir="rtl" hidden></div>
 <div id="portalCard" dir="rtl" hidden><span class="pi" id="pcIco"></span><div class="pt"><b id="pcName"></b><small id="pcDesc"></small></div><button id="pcGo" type="button">ادخل</button></div>
+<section class="panel" id="minePanel" dir="rtl" hidden>
+  <header><b>الشنطة ومحل الأدوات</b><span class="pill" style="font-size:16px;box-shadow:none">💵 <span id="mineCash2">0</span></span><button class="x" id="mineClose" aria-label="اقفل">✕</button></header>
+  <div class="cscroll">
+    <p class="ctitle" id="mineCap"></p><div id="mineBag"></div>
+    <p class="bnote" style="padding:6px 0">بيع الشنطة على الدايرة الدهبي فوق جنب الهرم.</p>
+    <p class="ctitle">طوّر</p><div id="mineUps" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px"></div>
+  </div>
+</section>
 <section class="panel" id="shopPanel" dir="rtl" hidden>
   <header><b>محل الشكل</b><span class="pill" style="font-size:16px;box-shadow:none">💰 <span id="gn2">0</span></span><button class="x" id="shopClose" aria-label="اقفل">✕</button></header>
   <div class="tabs"><button id="tabShop" type="button" class="on">المحل</button><button id="tabBadges" type="button">نياشيني 🎖️</button></div>
@@ -1733,7 +1741,7 @@ let selected = PR[store.get('hara-prank', 'balloon')] || PR.balloon;
 function doPrank(){
   if (TY.on) return tyGoHome();
   if (HUB.on) return togglePanel('emote');
-  if (CR.on) return craftToggle();
+  if (CR.on) return CR.kind === 'mine' ? mineUp() : craftToggle();
   if (MODE.id) return modeAction();
   if (!G.running || G.paused) return;
   const pr = selected;
@@ -2004,7 +2012,7 @@ function bindBtn(el, fn){
 }
 bindBtn($('jump'), () => doJump());
 bindBtn($('prank'), () => doPrank());
-bindBtn($('menuBtn'), () => CR.on ? (togglePanel('craft'), CR.invVer++) : HUB.on ? togglePanel('shop') : TY.on ? togglePanel('emote') : MODE.id ? modeAction2() : togglePanel('prank'));
+bindBtn($('menuBtn'), () => CR.on ? (CR.kind === 'mine' ? (togglePanel('mine'), renderMinePanel()) : (togglePanel('craft'), CR.invVer++)) : HUB.on ? togglePanel('shop') : TY.on ? togglePanel('emote') : MODE.id ? modeAction2() : togglePanel('prank'));
 document.addEventListener('contextmenu', e => { if (!typing(e)) e.preventDefault(); });
 
 function doJump(){
@@ -2054,6 +2062,7 @@ function togglePanel(which){
   $('chat').hidden = next !== 'chat';
   $('board').hidden = next !== 'board';
   $('craftPanel').hidden = next !== 'craft';
+  $('minePanel').hidden = next !== 'mine';
   $('shopPanel').hidden = next !== 'shop';
   $('wheelPanel').hidden = next !== 'wheel';
   $('emotePanel').hidden = next !== 'emote';
@@ -2310,7 +2319,7 @@ function sendPresence(dt){
   else Object.assign(pres, {mi:worldId(), ma:1, mo:0, mf:0, ms:0, md:''});
   pres.ty = TY.on ? [TY.plot, maskOf(TY.bought).toString(36), TY.rb] : 0;
   pres.cs = [LOOK.h || '', LOOK.s || '', LOOK.p || '']; pres.gn = WAL.gn; pres.bd = BDG.size; pres.em = P.em || '';
-  pres.co = CR.on && !CR.guestOf ? 1 : 0; pres.ct = CR.on ? Math.round(CR.time*1000)/1000 : 0;
+  pres.co = CR.on && !CR.guestOf && CR.kind !== 'mine' ? 1 : 0; pres.ct = CR.on ? Math.round(CR.time*1000)/1000 : 0;
   const s = JSON.stringify(pres);
   if (s === lastPres && !presenceDirty) return;
   lastPres = s; presenceDirty = false;
@@ -3416,7 +3425,7 @@ const isSolid = id => id > 0 && BL[id].solid;
 function solidW(wx, wy, wz){ return isSolid(vget(Math.floor(wx - OX), Math.floor(wy), Math.floor(wz - OZ))); }
 
 /* ---- pixel-art atlas (16×16 tiles), drawn here so no image files are needed ---- */
-const ATW = 8, ATH = 3, TS = 16;
+const ATW = 8, ATH = 4, TS = 16;
 const atlasCanvas = (() => {
   const c = document.createElement('canvas'); c.width = TS*ATW; c.height = TS*ATH;
   const x = c.getContext('2d'), rnd = mulberry(7);
@@ -3644,7 +3653,7 @@ function boxHit(px, py, pz){
   return false;
 }
 function waterAt(x, y, z){
-  if (y >= SEA) return false;
+  if (y >= SEA || CR.kind === 'mine') return false;
   const i = Math.floor(x - OX), k = Math.floor(z - OZ);
   for (let yy = Math.max(0, Math.floor(y) + 1); yy <= WATER_Y; yy++) if (isSolid(vget(i, yy, k))) return false;
   return true;
@@ -3706,7 +3715,7 @@ function itemIcon(id, el){
   else { el.style.backgroundImage = 'none'; el.textContent = ITEMS[id].ico; }
 }
 function renderCraftUI(){
-  if (CR.uiVer === CR.invVer) return;
+  if (CR.kind === 'mine' || CR.uiVer === CR.invVer) return;
   CR.uiVer = CR.invVer;
   const placeable = HOTBAR_ORDER.filter(id => CR.inv[id] > 0);
   if (CR.selId && !(CR.inv[CR.selId] > 0)) CR.selId = 0;
@@ -3794,13 +3803,14 @@ function updateMining(dt){
   if (!CR.mine || CR.mine.x !== target.x || CR.mine.y !== target.y || CR.mine.z !== target.z) CR.mine = {x:target.x, y:target.y, z:target.z, p:0, warned:false, tick:0};
   const m = CR.mine;
   if (!isFinite(b.hard)){ if (!m.warned){ m.warned = true; toast('ده صخر القاع، مايتكسرش', 'warn', 1.3); } return; }
-  if (b.tier > CR.tool){ if (!m.warned){ m.warned = true; toast(b.name + ' محتاج ' + TOOL_NAME[b.tier] + ' على الأقل. اعمله من 🔨 الصناعة', 'warn', 2.6); sfx('nope'); } return; }
+  if (b.tier > CR.tool){ if (!m.warned){ m.warned = true; toast(b.name + ' محتاج ' + TOOL_NAME[b.tier] + ' على الأقل. ' + (CR.kind === 'mine' ? 'اشتريه من محل الأدوات' : 'اعمله من 🔨 الصناعة'), 'warn', 2.6); sfx('nope'); } return; }
+  if (CR.kind === 'mine' && bagCount() >= MBAG[MN.bagLv]){ if (!m.warned){ m.warned = true; toast('الشنطة اتملت! 🎒 دوس ⬆️ واطلع بيع', 'warn', 2); sfx('nope'); } return; }
   m.p += dt*TOOL_SPEED[CR.tool]/Math.max(.15, b.hard);
   m.tick -= dt;
   if (m.tick <= 0){ m.tick = .22; sfx('boink'); burst(new THREE.Vector3(target.x + .5 + OX, target.y + .9, target.z + .5 + OZ), 2, b.col, {cube:true, size:.07, speed:1.5, up:2, life:.4}); P.throwT = .2; }
   player.g.rotation.y = Math.atan2(target.x + .5 + OX - P.x, target.z + .5 + OZ - P.z);
   crackBox.visible = true; crackBox.position.copy(hlBox.position); crackBox.material.opacity = .08 + Math.min(1, m.p)*.5;
-  if (m.p >= 1){ breakBlock(target); CR.mine = null; crackBox.visible = false; }
+  if (m.p >= 1){ (CR.kind === 'mine' ? mineBreak : breakBlock)(target); CR.mine = null; crackBox.visible = false; }
 }
 
 /* ---- day & night ---- */
@@ -3843,6 +3853,7 @@ function craftLoad(){
   CR.lanterns = new Set(); for (let i = 0; i < vox.length; i++) if (vox[i] === 18) CR.lanterns.add(i);
 }
 function craftSave(){
+  if (CR.kind === 'mine') return mineSave();
   if (CR.guestOf){
     const s = store.get('hara-craft-v1', null);
     if (s && s.v === 1){ s.inv = CR.inv; s.tool = CR.tool; store.set('hara-craft-v1', s); }
@@ -3900,11 +3911,11 @@ function enterCraft(){
   $('newWorld').hidden = !!CR.guestOf;
   G.running = true; G.paused = false;
   updateDayNight();
-  if (!CR.guestOf){
+  if (!CR.guestOf && CR.kind !== 'mine'){
     toast('أهلًا في جزيرة النيل! 🏝️', 'good', 2.5);
     if (room && chatState.live && avatars.size) setTimeout(() => toast('صحابك يقدروا يدخلوا جزيرتك من 🎮', '', 3), 1800);
   }
-  if (!store.get('hara-crafthint', false)){
+  if (!store.get('hara-crafthint', false) && CR.kind !== 'mine'){
     setTimeout(() => toast('دوس مطوّل على أي مكعب عشان تكسره. ابدأ بجذع نخلة', '', 4.5), 2600);
     setTimeout(() => toast('زرار ⛏️ بيقلب لـ🧱 بنا: اختار مكعب من الشريط ودوس مكان ما عايز تحطه', '', 5), 7600);
     store.set('hara-crafthint', true);
@@ -3916,6 +3927,7 @@ function exitCraft(silent){
   craftSave();
   CR.savedPos = [r2(P.x), r2(P.y), r2(P.z)];
   if (CR.guestOf) leaveGuest();
+  if (CR.kind === 'mine'){ CR.kind = 'island'; CR.wid = CR.ownWid; vox = null; CR.built = false; CR.savedPos = null; MN.bag = {}; $('tyPill').hidden = true; if (openPanel === 'mine') togglePanel(null); }
   scene.remove(CR.root);
   ALLEY_HIDDEN.forEach(o => o.visible = true); ALLEY_HIDDEN = [];
   cart.g.visible = true; setNeighborsVisible(true);
@@ -4006,7 +4018,7 @@ function leaveGuest(){
 }
 function onCraftMsg(k, d, msg, from, who){
   if (k === 'cjoin'){
-    if (CR.on && !CR.guestOf && d.w === CR.wid && d.to === meId()){ sendSnapshot(msg.peer); toast(who + ' داخل جزيرتك 👋', 'good', 2.5); }
+    if (CR.on && d.to === meId() && d.w === CR.wid && (CR.kind === 'mine' || !CR.guestOf)){ sendSnapshot(msg.peer); toast(who + (CR.kind === 'mine' ? ' نزل يحفر معاك ⛏️' : ' داخل جزيرتك 👋'), 'good', 2.5); }
     return;
   }
   if (k === 'csnap'){
@@ -4016,7 +4028,10 @@ function onCraftMsg(k, d, msg, from, who){
     if (j < 0 || j >= n || J.parts[j] !== undefined) return;
     J.n = n; J.seed = d.seed|0; J.t = clamp(+d.t || .3, 0, 1);
     J.parts[j] = typeof d.ed === 'string' ? d.ed : ''; J.got++;
-    if (J.got === n) finishJoin();
+    if (J.got === n){
+      if (J.mine){ CR.joining = null; const ed = []; for (const part of J.parts) ed.push(...decEd(part)); ed.push(...J.buf); mineEnterWorld(J.seed, ed); }
+      else finishJoin();
+    }
     return;
   }
   if (k === 'cblk'){
@@ -4046,16 +4061,16 @@ function craftToggle(){
 }
 function craftButtons(){
   targetRing.visible = doorRing.visible = false;
-  const key = 'c' + CR.mode;
+  const mine = CR.kind === 'mine', key = 'c' + CR.mode + (mine ? 'M' : '');
   if (btnState !== key){
     btnState = key;
-    $('prankIco').textContent = CR.mode === 'mine' ? '⛏️' : '🧱';
-    $('prankName').textContent = CR.mode === 'mine' ? 'كسر' : 'بنا';
-    $('menuBtn').hidden = false; $('menuBtn').textContent = '🔨 الصناعة';
+    $('prankIco').textContent = mine ? '⬆️' : CR.mode === 'mine' ? '⛏️' : '🧱';
+    $('prankName').textContent = mine ? 'اطلع فوق' : CR.mode === 'mine' ? 'كسر' : 'بنا';
+    $('menuBtn').hidden = false; $('menuBtn').textContent = mine ? '🎒 الشنطة' : '🔨 الصناعة';
   }
   $('prank').classList.remove('dim'); $('prank').style.setProperty('--cd', '0');
 }
-function craftInfo(){ return '🏝️ ' + (CR.guestOf ? 'جزيرة ' + (CR.guestName || 'صاحبك') : 'جزيرة النيل') + ' · ' + (CR.dl > .45 ? '☀️ نهار' : '🌙 ليل') + ' · 🛠️ ' + TOOL_NAME[CR.tool]; }
+function craftInfo(){ if (CR.kind === 'mine') return '🏺 كنز الهرم · 🎒 ' + bagCount() + '/' + MBAG[MN.bagLv] + ' · ⛏️ ' + TOOL_NAME[CR.tool] + ' · عمقك ' + Math.max(0, Math.round(MTOP - P.y)) + 'م'; return '🏝️ ' + (CR.guestOf ? 'جزيرة ' + (CR.guestName || 'صاحبك') : 'جزيرة النيل') + ' · ' + (CR.dl > .45 ? '☀️ نهار' : '🌙 ليل') + ' · 🛠️ ' + TOOL_NAME[CR.tool]; }
 function craftFrame(dt){
   if (!CR.on) return;
   guestTick(dt);
@@ -4063,7 +4078,8 @@ function craftFrame(dt){
   let n = 0;
   for (const c of CR.dirty){ CR.dirty.delete(c); buildChunk(c % NCX, Math.floor(c/NCX)); if (++n >= 2) break; }
   if (dt > 0){
-    CR.time = (CR.time + dt/480) % 1;
+    if (CR.kind !== 'mine') CR.time = (CR.time + dt/480) % 1;
+    mineTick(dt);
     updateDayNight();
     updateMining(dt);
     for (const c of cloudsV){ c.position.x += dt*.7; if (c.position.x > 70) c.position.x = -70; }
@@ -4132,6 +4148,7 @@ const RHY = {   // 16 sixteenth-steps per bar: D doum, T tak, k ghost tak
 const TRACKS = {
   hara:   {name:'مقسوم الحارة', bpm:104, rhy:'maqsoum', maq:'hijaz',  root:293.66, lead:'mizmar', seed:11, riq:true,  bass:true},
   match:  {name:'مهرجان التحدي', bpm:126, rhy:'mahrag',  maq:'kurd',   root:220.00, lead:'synth',  seed:23, riq:true,  bass:true, clap:true},
+  mine:   {name:'صعيدي الهرم',   bpm:100, rhy:'saidi',   maq:'hijaz',  root:196.00, lead:'mizmar', seed:71, riq:false, bass:true},
   tycoon: {name:'ملفوف المصنع',  bpm:116, rhy:'baladi',  maq:'hijaz',  root:246.94, lead:'synth',  seed:61, riq:true,  bass:true, clap:true},
   midan:  {name:'بلدي الميدان',  bpm:100, rhy:'baladi',  maq:'rast',   root:293.66, lead:'mizmar', seed:53, riq:true,  bass:true},
   island: {name:'صعيدي الجزيرة', bpm:96,  rhy:'saidi',   maq:'rast',   root:261.63, lead:'ney',    seed:37, riq:false, bass:true},
@@ -4229,7 +4246,7 @@ function musTick(){
     MUS.next += stepDur; MUS.step++;
   }
 }
-function musicWant(){ return TY.on ? 'tycoon' : HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
+function musicWant(){ return CR.on && CR.kind === 'mine' ? 'mine' : TY.on ? 'tycoon' : HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
 function applyMusicVol(){ if (MUS.bus && ac && !MUS.fade) MUS.bus.gain.setTargetAtTime(Math.max(.0001, (settings.music ?? .5)*.55), ac.currentTime, .2); }
 function musicStart(){
   if (!ac || MUS.bus) return;
@@ -4251,7 +4268,7 @@ const PORTALS = [
   {id:'balloons', icon:'💦', name:'حرب البلالين',    col:'#13a3b5', go:() => requestMode('balloons')},
   {id:'chickens', icon:'🐔', name:'مطاردة الفراخ',   col:'#ff8a3d', go:() => requestMode('chickens')},
   {id:'tycoon',   icon:'🧱', name:'مصنع الطوب',      col:'#c96f4a', go:() => enterTycoon(), desc:'خد أرض واشتري مكن بيطلّع طوب على سير. الطوب بيتحوّل فلوس تكبّر بيها مصنعك، ولما تخلّصه ابنيه من الأول بمكسب أكبر.'},
-  {id:'mine',     icon:'⛏️', name:'كنز الهرم',       col:'#9a8f86', soon:true, desc:'احفر تحت الهرم طبقة ورا طبقة ومعاك جمل صغير بيحفر معاك.'},
+  {id:'mine',     icon:'⛏️', name:'كنز الهرم',       col:'#d9a441', go:() => enterMine(), desc:'احفر الحفرة اللي جنب الهرم طبقة ورا طبقة. املا شنطتك وبيعها، وطوّر أزمتك وشنطتك. تحت خالص فيه جعارين دهب وصناديق كنز.'},
   {id:'boat',     icon:'⛵', name:'مركب الكنز',      col:'#9a8f86', soon:true, desc:'ابني مركب بالمكعبات وانزل بيه النيل وسط الصخور والدوّامات.'},
   {id:'td',       icon:'🏰', name:'احمي الحارة',     col:'#9a8f86', soon:true, desc:'حط فوانيس ورشاشات وبيّاع ترمس قدام جيوش الوز.'},
   {id:'mystery',  icon:'🕵️', name:'مين سرق الفول؟',  col:'#9a8f86', soon:true, desc:'سرّاق وشاويش وأهالي، والشاويش لازم يكشف السرّاق.'},
@@ -4287,6 +4304,10 @@ const BADGES = {
   kiln:{ico:'🔥', name:'فرّان', d:'اشتريت فرن الطوب'},
   tycoon:{ico:'🧱', name:'ملك الطوب', d:'خلّصت المصنع كله'},
   rebirth:{ico:'⭐', name:'من الأول', d:'بنيت المصنع من الأول'},
+  miner:{ico:'⛏️', name:'عامل منجم', d:'بعت أول شنطة'},
+  deep:{ico:'🕳️', name:'تحت خالص', d:'وصلت لطبقة البركاني'},
+  scarab:{ico:'🪲', name:'الجعران الدهب', d:'لقيت جعران دهب'},
+  treasure:{ico:'💎', name:'صياد الكنوز', d:'فتحت صندوق كنز'},
 };
 const BDG = new Set((store.get('hara-badges', []) || []).filter(b => BADGES[b]));
 function badge(id){
@@ -5032,6 +5053,175 @@ function tyFrame(dt){
   TY.saveT += dt; if (TY.saveT > 6){ TY.saveT = 0; tySave(); }
 }
 
+/* =========================================================
+   «كنز الهرم» — Roblox-style mining simulator on the voxel engine
+   ========================================================= */
+defB(22, {name:'جرانيت', t:[22,22,22], hard:2.2, tier:2, col:'#b5584a'});
+defB(23, {name:'حجر بركاني', t:[23,23,23], hard:3, tier:3, col:'#3b3540'});
+defB(24, {name:'جعران دهب', t:[24,24,24], hard:3.6, tier:4, col:'#f4cf3a'});
+defB(25, {name:'صندوق كنز', t:[25,25,25], hard:3.2, tier:4, col:'#a8743a'});
+defB(26, {name:'حجر الهرم', t:[26,26,26], hard:Infinity, col:'#e2c48a'});
+const MVAL = {3:1, 6:2, 5:4, 12:8, 14:15, 22:8, 13:25, 15:60, 23:15, 16:150, 24:500, 25:1000};
+const MPICK = [null, null, {price:120}, {price:600}, {price:2500}];          // by CR.tool level
+const MBAG = [20, 50, 120, 300, 800], MBAG_PRICE = [0, 150, 700, 2500, 8000];
+const PIT0 = 20, PIT1 = 44, MTOP = 26;
+const MN = {cash:0, bag:{}, bagLv:0, pick:1, earned:0};
+(() => {
+  const s = store.get('hara-mine', null);
+  if (s && typeof s === 'object'){ MN.cash = Math.max(0, +s.cash || 0); MN.bagLv = clamp(s.bagLv|0, 0, 4); MN.pick = clamp(s.pick|0, 1, 4); MN.earned = Math.max(0, +s.earned || 0); }
+})();
+function mineSave(){ store.set('hara-mine', {cash:Math.floor(MN.cash), bagLv:MN.bagLv, pick:CR.kind === 'mine' ? CR.tool : MN.pick, earned:Math.floor(MN.earned)}); }
+const bagCount = () => Object.values(MN.bag).reduce((s, n) => s + n, 0);
+const bagValue = () => Object.entries(MN.bag).reduce((s, [id, n]) => s + (MVAL[id] || 0)*n, 0);
+const petBonus = () => LOOK.p === 'p_camel' ? .5 : LOOK.p ? .25 : 0;
+
+/* extra pixel tiles for the mine (rows 3 of the atlas) */
+(() => {
+  const x = atlasCanvas.getContext('2d'), rnd = mulberry(99);
+  const jit = (hex, amt) => { const k = new THREE.Color(hex); k.offsetHSL(0, 0, (rnd() - .5)*amt); return '#' + k.getHexString(); };
+  const tile = (i, fn) => { const ox = (i % ATW)*TS, oy = Math.floor(i/ATW)*TS; for (let py = 0; py < TS; py++) for (let px = 0; px < TS; px++){ const c = fn(px, py, rnd()); if (c){ x.fillStyle = c; x.fillRect(ox + px, oy + py, 1, 1); } } };
+  tile(22, (px, py, r) => r < .12 ? jit('#e8d6c8', .1) : jit('#b5584a', .12));
+  tile(23, (px, py, r) => r < .1 ? jit('#7a5ca8', .1) : jit('#3b3540', .15));
+  tile(24, (px, py) => { const d = Math.hypot((px - 7.5)*1.2, py - 8); return d < 4.5 ? jit('#f4cf3a', .08) : (d < 5.5 ? '#9a7a20' : jit('#3b3540', .12)); });
+  tile(25, (px, py) => (py === 5 || py === 6) ? '#f4cf3a' : (px === 0 || px === 15 || py === 0 || py === 15) ? '#5f4124' : (px === 7 || px === 8) && py > 4 && py < 9 ? '#f4cf3a' : jit('#a8743a', .08));
+  tile(26, (px, py) => py % 4 === 3 ? '#c9a86a' : ((px + (Math.floor(py/4) % 2)*8) % 16 === 0 ? '#c9a86a' : jit('#e2c48a', .05)));
+})();
+
+function genMine(seed){
+  vox = new Uint8Array(VX*VY*VZ);
+  for (let k = 0; k < VZ; k++) for (let i = 0; i < VX; i++){
+    const pit = i >= PIT0 && i < PIT1 && k >= PIT0 && k < PIT1;
+    for (let y = 0; y < MTOP; y++){
+      let id = 26;
+      if (y === 0) id = 20;
+      else if (pit){
+        const q = hash3(i, y, k, seed);
+        if (y >= 21) id = 3;
+        else if (y >= 16) id = 6;
+        else if (y >= 11) id = q < .06 ? 14 : q < .16 ? 12 : 5;
+        else if (y >= 6) id = q < .05 ? 15 : q < .14 ? 13 : 22;
+        else id = q < .004 ? 25 : q < .014 ? 24 : q < .05 ? 16 : 23;
+      }
+      vox[vIdx(i, y, k)] = id;
+    }
+  }
+  // stepped pyramid in the far corner
+  for (let s = 0; s < 6; s++) for (let k = 2 + s; k < 20 - s; k++) for (let i = 2 + s; i < 20 - s; i++) if (MTOP + s < VY) vox[vIdx(i, MTOP + s, k)] = 26;
+  // a little stair down into the pit so newcomers can walk in
+  for (let s = 0; s < 4; s++) for (let i = 30; i < 34; i++) for (let y = MTOP - 1 - s; y < MTOP; y++) vox[vIdx(i, y, PIT1 - 1 - s)] = 0;
+  CR.spawn = [OX + 32, MTOP + .05, OZ + 54];
+}
+function buildMineScene(){
+  voxMats(); craftHelpers();
+  if (CR.root) scene.remove(CR.root);
+  CR.root = new THREE.Group(); CR.chunks = [];
+  for (let cz = 0; cz < VZ/CS; cz++) for (let cx = 0; cx < NCX; cx++) buildChunk(cx, cz);
+  const desert = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshLambertMaterial({color:'#e2c189'}));
+  desert.rotation.x = -Math.PI/2; desert.position.y = MTOP - .03; CR.root.add(desert);
+  cloudsV = [];
+  for (let i = 0; i < 6; i++){
+    const c = new THREE.Mesh(new THREE.BoxGeometry(rand(6, 12), 1, rand(4, 8)), new THREE.MeshLambertMaterial({color:'#ffffff', transparent:true, opacity:.9}));
+    c.position.set(rand(-60, 60), 44 + rand(0, 4), rand(-60, 60)); CR.root.add(c); cloudsV.push(c);
+  }
+  // sell pad + tool shop on the surface
+  const pad = new THREE.Mesh(cyl(1.4, 1.4, .12, 28), new THREE.MeshLambertMaterial({color:'#f4cf3a'})); pad.position.set(OX + 32, MTOP + .07, OZ + 49); CR.root.add(pad);
+  const ps = signMesh(textTex('💵 بيع الشنطة', {bg:'#f4cf3a', fill:'#2b1a12', stroke:false, size:76}), 3, .75); ps.position.set(OX + 32, MTOP + 2, OZ + 49); CR.root.add(ps);
+  const shop = boothMesh('⛏️ محل الأدوات', '#3a7bd5'); shop.position.set(OX + 25, MTOP, OZ + 51); shop.rotation.y = .5; CR.root.add(shop);
+  const title = signMesh(textTex('🏺 كنز الهرم', {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:80}), 6, 1.5); title.position.set(OX + 32, MTOP + 5.5, OZ + 45); CR.root.add(title);
+  const layers = [['رمل ١ 💵', 23], ['حجر جيري ٢', 18], ['حجر + نحاس', 13], ['جرانيت + دهب', 8], ['بركاني + فيروز + كنوز', 3]];
+  layers.forEach(([t, y]) => { const s = signMesh(textTex(t, {bg:'#2b1a12', fill:'#ffc93c', size:64, w:512, h:128}), 2.4, .6); s.position.set(OX + PIT0 - .02, y + .5, OZ + 32); s.rotation.y = Math.PI/2; CR.root.add(s); });
+  CR.root.add(hlBox, crackBox);
+  lampLights = [];
+  CR.dirty.clear(); CR.built = true;
+  MN.pad = {x:OX + 32, z:OZ + 49}; MN.shop = {x:OX + 25.6, z:OZ + 52.6};
+}
+function mineEnterWorld(seed, edits){
+  if (CR.on) exitCraft(true);
+  CR.kind = 'mine'; CR.wid = 4; CR.guestOf = null; CR.seed = seed;
+  genMine(seed);
+  CR.edits = new Map();
+  for (const [i, id] of edits || []){ vox[i] = id; CR.edits.set(i, id); }
+  CR.lanterns = new Set(); CR.built = false; CR.savedPos = null; CR.time = .27;
+  CR.tool = MN.pick; MN.bag = {};
+  buildMineScene();
+  enterCraft(true);
+  $('hotbar').hidden = true; $('tyPill').hidden = false; $('newWorld').hidden = true;
+  CR.mode = 'mine';
+  toast('أهلًا في كنز الهرم! 🏺 احفر لتحت، كل ما تنزل الخامات بتغلى', 'good', 3.5);
+  if (!store.get('hara-minehint', false)){ setTimeout(() => toast('الشنطة لما تتملي، دوس ⬆️ وبيع على الدايرة الدهبي', '', 4.5), 4000); store.set('hara-minehint', true); }
+}
+function enterMine(){
+  const miners = [...avatars.values()].filter(a => a.mi === 4).sort((a, b) => a.peer < b.peer ? -1 : 1);
+  if (miners.length && room && chatState.live){
+    const av = miners[0];
+    const J = {owner:av.peer, name:av.name, w:4, parts:[], got:0, n:0, buf:[], mine:true};
+    CR.joining = J;
+    shareAct({k:'cjoin', w:4, to:av.peer});
+    toast('بيجيب الحفرة من ' + av.name + '…', '', 2);
+    setTimeout(() => { if (CR.joining === J){ CR.joining = null; mineEnterWorld((Math.random()*1e6)|0, []); } }, 6000);
+  } else mineEnterWorld((Math.random()*1e6)|0, []);
+}
+function mineBreak(h){
+  const id = h.id, b = BL[id];
+  setBlock(h.x, h.y, h.z, 0);
+  const pos = new THREE.Vector3(h.x + .5 + OX, h.y + .5, h.z + .5 + OZ);
+  burst(pos, 12, [b.col, shade(b.col, -.15), shade(b.col, .1)], {cube:true, size:.12, speed:2.5, up:4, grav:14, life:.7});
+  sfx('crash');
+  if (id === 25){ const g = 1000 + ((Math.random()*1500)|0); MN.cash += g; addGn(50, 'لقيت صندوق كنز! 💎'); badge('treasure'); pop('+' + g + ' 💵', pos, '#ffc93c', 1.6, false); return; }
+  MN.bag[id] = (MN.bag[id] || 0) + 1;
+  pop('+' + (MVAL[id] || 0), pos.clone().setY(pos.y + .8), id === 24 ? '#ffc93c' : '#ffffff', id === 24 ? 1.4 : .9, false);
+  if (id === 24) badge('scarab');
+  if (h.y <= 5) badge('deep');
+  if (bagCount() >= MBAG[MN.bagLv]) toast('الشنطة اتملت! 🎒 دوس ⬆️ واطلع بيع', 'warn', 2.5);
+}
+function mineSell(){
+  const v = bagValue(); if (!v) return;
+  const total = Math.round(v*(1 + petBonus()));
+  MN.cash += total; MN.earned += total; MN.bag = {};
+  sfx('score'); setTimeout(() => sfx('coin'), 120);
+  pop('+' + total + ' 💵', new THREE.Vector3(P.x, P.y + 2.8, P.z), '#9fe3b8', 1.4, false);
+  toast('بعت الشنطة بـ' + total + ' 💵' + (petBonus() ? ' (حيوانك ساعدك +' + Math.round(petBonus()*100) + '٪)' : ''), 'good', 2.4);
+  const g = Math.floor(total/100); if (g > 0) addGn(g);
+  badge('miner'); mineSave(); renderMinePanel();
+}
+function renderMinePanel(){
+  if (openPanel !== 'mine') return;
+  const bg = $('mineBag'); bg.textContent = '';
+  const ids = Object.keys(MN.bag).map(Number);
+  if (!ids.length){ const e = document.createElement('span'); e.className = 'bnote'; e.style.padding = '0'; e.textContent = 'الشنطة فاضية. احفر!'; bg.appendChild(e); }
+  for (const id of ids){ const s_ = document.createElement('span'); s_.className = 'iv'; const i = document.createElement('i'); itemIcon(id, i); s_.append(i, document.createTextNode(BL[id].name + ' ×' + MN.bag[id] + ' = ' + MN.bag[id]*MVAL[id] + ' 💵')); bg.appendChild(s_); }
+  $('mineCap').textContent = '🎒 ' + bagCount() + ' / ' + MBAG[MN.bagLv] + ' · قيمتها ' + bagValue() + ' 💵' + (petBonus() ? ' (+' + Math.round(petBonus()*100) + '٪ من حيوانك)' : '');
+  const up = $('mineUps'); up.textContent = '';
+  const card = (title, sub, price, can, fn) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'rc ' + (can ? 'ok' : 'no');
+    const o = document.createElement('span'); o.className = 'o'; o.textContent = title;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = sub;
+    b.append(o, n); b.addEventListener('click', fn); up.appendChild(b);
+  };
+  const nextPick = CR.tool + 1;
+  if (nextPick <= 4) card('⛏️ ' + TOOL_NAME[nextPick], 'بتكسر أسرع وبتوصل لخامات أعمق · ' + MPICK[nextPick].price + ' 💵', MPICK[nextPick].price, MN.cash >= MPICK[nextPick].price, () => {
+    if (MN.cash < MPICK[nextPick].price){ sfx('nope'); return; }
+    MN.cash -= MPICK[nextPick].price; CR.tool = nextPick; MN.pick = nextPick; sfx('score'); toast('بقى معاك ' + TOOL_NAME[nextPick] + '! ⛏️', 'good', 2); mineSave(); renderMinePanel();
+  });
+  else card('⛏️ ' + TOOL_NAME[4], 'أقوى أداة ✓', 0, false, () => {});
+  if (MN.bagLv < 4) card('🎒 شنطة ' + MBAG[MN.bagLv + 1], 'بتشيل أكتر قبل ما تطلع تبيع · ' + MBAG_PRICE[MN.bagLv + 1] + ' 💵', 0, MN.cash >= MBAG_PRICE[MN.bagLv + 1], () => {
+    const pr = MBAG_PRICE[MN.bagLv + 1]; if (MN.cash < pr){ sfx('nope'); return; }
+    MN.cash -= pr; MN.bagLv++; sfx('score'); toast('شنطتك بقت تشيل ' + MBAG[MN.bagLv] + '! 🎒', 'good', 2); mineSave(); renderMinePanel();
+  });
+  else card('🎒 شنطة ' + MBAG[4], 'أكبر شنطة ✓', 0, false, () => {});
+}
+function mineTick(dt){
+  if (CR.kind !== 'mine') return;
+  $('tyCash').textContent = Math.floor(MN.cash); $('mineCash2').textContent = Math.floor(MN.cash);
+  if (Math.hypot(P.x - MN.pad.x, P.z - MN.pad.z) < 1.6 && P.y > MTOP - .5 && bagCount()) mineSell();
+  const nearShop = Math.hypot(P.x - MN.shop.x, P.z - MN.shop.z) < 2.4 && P.y > MTOP - .5;
+  if (nearShop && !MN.atShop){ togglePanel('mine'); renderMinePanel(); }
+  MN.atShop = nearShop;
+  MN.panelT = (MN.panelT || 0) - dt; if (MN.panelT <= 0){ MN.panelT = .5; renderMinePanel(); }
+}
+function mineUp(){ P.x = MN.pad.x + rand(-.4, .4); P.z = MN.pad.z + .4; P.y = MTOP + .1; P.vy = 0; sfx('jump'); burst(new THREE.Vector3(P.x, P.y + 1, P.z), 14, ['#ffc93c','#ffffff'], {size:.12, speed:2, up:4}); }
+
+$('mineClose').addEventListener('click', () => togglePanel(null));
 /* scoreboard + timed match */
 function boardRows(){
   if (MODE.id) return modeRows().sort((a, b) => b.ms - a.ms).map(r => ({name:r.name, sc:r.md, me:r.id === meId()}));
