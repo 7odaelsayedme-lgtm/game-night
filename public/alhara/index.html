@@ -258,6 +258,7 @@ button:focus-visible,.btn:focus-visible,input:focus-visible{outline:3px dashed v
     <div class="pill"><small>النقط</small><span id="score">0</span></div>
     <div class="pill"><span class="coin"></span><span id="coins">20</span></div>
     <div class="pill" id="gnPill" title="جنيه الحارة">💰 <span id="gn">0</span></div>
+    <div class="pill" id="tyPill" hidden style="background:#d9f5e3">💵 <span id="tyCash">0</span></div>
     <div class="pill" id="hearts"><span>♥</span><span>♥</span><span>♥</span></div>
     <div class="pill" id="timer" hidden>3:00</div>
     <div class="pill" id="mini" hidden></div>
@@ -1730,6 +1731,7 @@ const cds = {}; PRANKS.forEach(p => cds[p.id] = 0);
 let selected = PR[store.get('hara-prank', 'balloon')] || PR.balloon;
 
 function doPrank(){
+  if (TY.on) return tyGoHome();
   if (HUB.on) return togglePanel('emote');
   if (CR.on) return craftToggle();
   if (MODE.id) return modeAction();
@@ -2002,7 +2004,7 @@ function bindBtn(el, fn){
 }
 bindBtn($('jump'), () => doJump());
 bindBtn($('prank'), () => doPrank());
-bindBtn($('menuBtn'), () => CR.on ? (togglePanel('craft'), CR.invVer++) : HUB.on ? togglePanel('shop') : MODE.id ? modeAction2() : togglePanel('prank'));
+bindBtn($('menuBtn'), () => CR.on ? (togglePanel('craft'), CR.invVer++) : HUB.on ? togglePanel('shop') : TY.on ? togglePanel('emote') : MODE.id ? modeAction2() : togglePanel('prank'));
 document.addEventListener('contextmenu', e => { if (!typing(e)) e.preventDefault(); });
 
 function doJump(){
@@ -2114,6 +2116,7 @@ function resetGame(){
   cart.t = 0;
 }
 function startGame(){
+  if (TY.on) tyExit();
   if (HUB.on) hubExit();
   if (CR.on) exitCraft(true);
   if (MODE.id) clearMode();
@@ -2265,6 +2268,7 @@ function syncAvatars(peers){
     const wasOwner = av.co; av.co = pp.co ? 1 : 0; av.ct = clamp(+pp.ct || 0, 0, 1);
     if (av.co && !wasOwner && av.seen && !(CR.on && CR.wid === av.mi)) toast('🏝️ ' + av.name + ' فتح جزيرته! ادخلها من 🎮', 'good', 3.5);
     av.seen = true;
+    av.tyc = Array.isArray(pp.ty) ? [clamp(pp.ty[0]|0, -1, 3), String(pp.ty[1] || '0').slice(0, 8), clamp(pp.ty[2]|0, 0, 99)] : null;
     av.gn = Math.max(0, Math.min(1e7, pp.gn|0)); av.bd = clamp(pp.bd|0, 0, 99);
     if (Array.isArray(pp.cs)){ const lk = {h:SHOPI[pp.cs[0]] ? pp.cs[0] : '', s:SHOPI[pp.cs[1]] ? pp.cs[1] : '', p:SHOPI[pp.cs[2]] ? pp.cs[2] : ''}; applyLook(av.p, lk, av.peer); }
     if (typeof pp.em === 'string' && pp.em !== av.em){ const first = av.em === undefined; av.em = pp.em; const kind = pp.em.split(':')[0]; if (!first && EMO[kind]) bubbleOver(av.p.g.position, EMO[kind], av.peer); }
@@ -2304,6 +2308,7 @@ function sendPresence(dt){
   const pres = {n:myNick, c:myColor, x:Math.round(P.x*100)/100, z:Math.round(P.z*100)/100, y:Math.round(P.y*10)/10, r:Math.round(player.g.rotation.y*100)/100, d:P.disguise > 0 ? 1 : 0, sc:G.score, s:playerStatus(), h:P.hidden ? 1 : 0, i:P.inv > 0 ? 1 : 0, v:document.hidden ? 0 : 1};
   if (MODE.id){ const sc = myModeScore(); Object.assign(pres, {mi:MODE.ep, ma:MODE.alive ? 1 : 0, mo:MODE.out ? 1 : 0, mf:MODE.finished ? 1 : 0, ms:sc.ms, md:sc.md}); }
   else Object.assign(pres, {mi:worldId(), ma:1, mo:0, mf:0, ms:0, md:''});
+  pres.ty = TY.on ? [TY.plot, maskOf(TY.bought).toString(36), TY.rb] : 0;
   pres.cs = [LOOK.h || '', LOOK.s || '', LOOK.p || '']; pres.gn = WAL.gn; pres.bd = BDG.size; pres.em = P.em || '';
   pres.co = CR.on && !CR.guestOf ? 1 : 0; pres.ct = CR.on ? Math.round(CR.time*1000)/1000 : 0;
   const s = JSON.stringify(pres);
@@ -2536,7 +2541,7 @@ function netBroadcast(dt){
   if (room && chatState.live && !isHost() && performance.now() - lastNbAt > 3500){
     staleHosts.set(hostId, Date.now()); electHost(room.peers()); lastNbAt = performance.now();
   }
-  if (!netHost() || MODE.id || CR.on || HUB.on) return;
+  if (!netHost() || MODE.id || CR.on || HUB.on || TY.on) return;
   popBudget = Math.min(10, popBudget + dt*8);
   nbT -= dt; if (nbT > 0) return; nbT = .1;
   shareAct({k:'nb',
@@ -2839,6 +2844,7 @@ function modeSpawn(){
 function startMode(d, byName){
   const id = d.m, M_ = MODES[id];
   if (!M_ || id === 'pranks' || M_.craft) return;
+  if (TY.on) tyExit();
   if (HUB.on) hubExit();
   if (CR.on) exitCraft(true);
   if (MODE.id) clearMode();
@@ -2930,7 +2936,7 @@ function onModeStart(d, from, who){
 function modeAvatars(){ return [...avatars.values()].filter(a => a.mi === MODE.ep && MODE.pl.includes(a.peer)); }
 function modeHostId(){ return [meId(), ...modeAvatars().map(a => a.peer)].sort()[0]; }
 const isModeHost = () => modeHostId() === meId();
-function worldId(){ return MODE.id ? MODE.ep : CR.on ? CR.wid : HUB.on ? 2 : 0; }
+function worldId(){ return MODE.id ? MODE.ep : CR.on ? CR.wid : HUB.on ? 2 : TY.on ? 3 : 0; }
 function myModeScore(){
   switch (MODE.id){
     case 'balloons': return {ms:MODE.score, md:MODE.score + ' 💥'};
@@ -3867,6 +3873,7 @@ function buildCraftScene(){
 }
 function enterCraft(){
   if (CR.on) return;
+  if (TY.on) tyExit();
   if (HUB.on) hubExit();
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
@@ -4098,7 +4105,7 @@ function craftFrame(dt){
     buildCraftScene(); scene.add(CR.root); craftRespawn(); CR.invVer++; craftSave();
     toast('جزيرة جديدة! 🏝️', 'good', 2);
   });
-  addEventListener('beforeunload', () => { if (CR.on) craftSave(); });
+  addEventListener('beforeunload', () => { if (CR.on) craftSave(); if (typeof TY !== 'undefined' && TY.on) tySave(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && CR.on) craftSave(); });
   addEventListener('keydown', e => {
     if (!CR.on || typing(e)) return;
@@ -4125,6 +4132,7 @@ const RHY = {   // 16 sixteenth-steps per bar: D doum, T tak, k ghost tak
 const TRACKS = {
   hara:   {name:'مقسوم الحارة', bpm:104, rhy:'maqsoum', maq:'hijaz',  root:293.66, lead:'mizmar', seed:11, riq:true,  bass:true},
   match:  {name:'مهرجان التحدي', bpm:126, rhy:'mahrag',  maq:'kurd',   root:220.00, lead:'synth',  seed:23, riq:true,  bass:true, clap:true},
+  tycoon: {name:'ملفوف المصنع',  bpm:116, rhy:'baladi',  maq:'hijaz',  root:246.94, lead:'synth',  seed:61, riq:true,  bass:true, clap:true},
   midan:  {name:'بلدي الميدان',  bpm:100, rhy:'baladi',  maq:'rast',   root:293.66, lead:'mizmar', seed:53, riq:true,  bass:true},
   island: {name:'صعيدي الجزيرة', bpm:96,  rhy:'saidi',   maq:'rast',   root:261.63, lead:'ney',    seed:37, riq:false, bass:true},
   night:  {name:'ليل النيل',     bpm:70,  rhy:'soft',    maq:'bayati', root:293.66, lead:'oud',    seed:41, riq:false, bass:false},
@@ -4221,7 +4229,7 @@ function musTick(){
     MUS.next += stepDur; MUS.step++;
   }
 }
-function musicWant(){ return HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
+function musicWant(){ return TY.on ? 'tycoon' : HUB.on ? 'midan' : CR.on ? (CR.dl < .4 ? 'night' : 'island') : (MODE.id || MATCH.on) ? 'match' : 'hara'; }
 function applyMusicVol(){ if (MUS.bus && ac && !MUS.fade) MUS.bus.gain.setTargetAtTime(Math.max(.0001, (settings.music ?? .5)*.55), ac.currentTime, .2); }
 function musicStart(){
   if (!ac || MUS.bus) return;
@@ -4242,7 +4250,7 @@ const PORTALS = [
   {id:'flood',    icon:'🌊', name:'الحارة غرقت',     col:'#3a7bd5', go:() => requestMode('flood')},
   {id:'balloons', icon:'💦', name:'حرب البلالين',    col:'#13a3b5', go:() => requestMode('balloons')},
   {id:'chickens', icon:'🐔', name:'مطاردة الفراخ',   col:'#ff8a3d', go:() => requestMode('chickens')},
-  {id:'tycoon',   icon:'🧱', name:'مصنع الطوب',      col:'#9a8f86', soon:true, desc:'ابني مصنع طوب وكبّره لحد ما يبقى أكبر مصنع في الحارة.'},
+  {id:'tycoon',   icon:'🧱', name:'مصنع الطوب',      col:'#c96f4a', go:() => enterTycoon(), desc:'خد أرض واشتري مكن بيطلّع طوب على سير. الطوب بيتحوّل فلوس تكبّر بيها مصنعك، ولما تخلّصه ابنيه من الأول بمكسب أكبر.'},
   {id:'mine',     icon:'⛏️', name:'كنز الهرم',       col:'#9a8f86', soon:true, desc:'احفر تحت الهرم طبقة ورا طبقة ومعاك جمل صغير بيحفر معاك.'},
   {id:'boat',     icon:'⛵', name:'مركب الكنز',      col:'#9a8f86', soon:true, desc:'ابني مركب بالمكعبات وانزل بيه النيل وسط الصخور والدوّامات.'},
   {id:'td',       icon:'🏰', name:'احمي الحارة',     col:'#9a8f86', soon:true, desc:'حط فوانيس ورشاشات وبيّاع ترمس قدام جيوش الوز.'},
@@ -4275,6 +4283,10 @@ const BADGES = {
   friend:{ico:'🤝', name:'جدع', d:'دخلت جزيرة صاحبك'},
   shop:{ico:'🛍️', name:'شيك', d:'اشتريت أول حاجة'},
   lucky:{ico:'🎡', name:'محظوظ', d:'لفّيت عجلة الحظ'},
+  factory:{ico:'🏭', name:'صاحب مصنع', d:'اشتريت أول مكنة'},
+  kiln:{ico:'🔥', name:'فرّان', d:'اشتريت فرن الطوب'},
+  tycoon:{ico:'🧱', name:'ملك الطوب', d:'خلّصت المصنع كله'},
+  rebirth:{ico:'⭐', name:'من الأول', d:'بنيت المصنع من الأول'},
 };
 const BDG = new Set((store.get('hara-badges', []) || []).filter(b => BADGES[b]));
 function badge(id){
@@ -4604,6 +4616,7 @@ function drawBoard(){
 /* ---- enter / leave / per frame ---- */
 let HUB_HIDDEN = [];
 function enterHub(){
+  if (TY.on) tyExit();
   if (MODE.id) clearMode();
   if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
   if (CR.on) exitCraft(true);
@@ -4696,6 +4709,329 @@ for (const b of document.querySelectorAll('#emotePanel [data-em]')) b.addEventLi
 renderGn();
 applyLook(player, LOOK, 'me');
 
+/* =========================================================
+   «مصنع الطوب» — Roblox-style tycoon: 4 plots, droppers, belt, upgraders, rebirth
+   ========================================================= */
+const TYI = [
+  {id:'d1',     name:'مكنة طين',          price:0,    kind:'drop', z:-7,  side:-1, val:1,  every:2,   col:'#a8603f'},
+  {id:'d2',     name:'مكنة طين ٢',        price:25,   kind:'drop', z:-4.5,side:-1, val:1,  every:1.6, col:'#a8603f'},
+  {id:'d3',     name:'مكنة طين ٣',        price:70,   kind:'drop', z:-2,  side:-1, val:2,  every:1.6, col:'#a8603f'},
+  {id:'kiln',   name:'فرن الطوب ×٢',      price:150,  kind:'up',   z:3.4, mul:2,   col:'#b4472f'},
+  {id:'d4',     name:'مكنة كبيرة',         price:300,  kind:'drop', z:.5,  side:-1, val:5,  every:1.8, col:'#c08a52'},
+  {id:'walls',  name:'سور المصنع',         price:250,  kind:'deco'},
+  {id:'speed',  name:'سير أسرع',           price:450,  kind:'speed'},
+  {id:'d5',     name:'مكنة حجر',           price:700,  kind:'drop', z:-6,  side:1,  val:10, every:2,   col:'#8e8e8e'},
+  {id:'auto',   name:'شنطة فلوس أوتوماتيك', price:900,  kind:'auto'},
+  {id:'glaze',  name:'مكنة تلميع ×١٫٥',    price:1200, kind:'up',   z:5.4, mul:1.5, col:'#2ec4c0'},
+  {id:'roof',   name:'سقف وأعمدة',         price:1000, kind:'deco'},
+  {id:'d6',     name:'مكنة دهب',           price:2200, kind:'drop', z:-3,  side:1,  val:25, every:2.2, col:'#f4cf3a'},
+  {id:'sign',   name:'يافطة المصنع',       price:1800, kind:'deco'},
+  {id:'chimney',name:'مدخنة',              price:3000, kind:'deco'},
+  {id:'d7',     name:'مكنة فيروز',         price:5000, kind:'drop', z:0,   side:1,  val:60, every:2.4, col:'#2ec4c0'},
+];
+const TYIX = Object.fromEntries(TYI.map((it, i) => [it.id, i]));
+const PLOT_POS = [[-15,-15], [15,-15], [-15,15], [15,15]];
+const TY = {on:false, root:null, plots:[], plot:-1, cash:0, pending:0, bought:new Set(), rb:0, saveT:0, obs:[], pads:[], beltTex:null, padT:0, last:''};
+(() => {
+  const s = store.get('hara-tycoon', null);
+  if (s && typeof s === 'object'){
+    TY.cash = Math.max(0, +s.cash || 0); TY.pending = Math.max(0, +s.pending || 0); TY.rb = clamp(s.rb|0, 0, 99);
+    if (Array.isArray(s.b)) for (const id of s.b) if (TYIX[id] !== undefined) TY.bought.add(id);
+  }
+})();
+const tyMult = () => 1 + TY.rb*.5;
+function tySave(){ store.set('hara-tycoon', {cash:Math.floor(TY.cash), pending:Math.floor(TY.pending), b:[...TY.bought], rb:TY.rb}); }
+const maskOf = set => TYI.reduce((m, it, i) => set.has(it.id) ? m | (1 << i) : m, 0);
+const setOfMask = m => new Set(TYI.filter((_, i) => m & (1 << i)).map(it => it.id));
+function plotFrame(i){ const [px, pz] = PLOT_POS[i]; return {px, pz, a:Math.atan2(-px, -pz)}; }
+function toLocal(i, x, z){ const {px, pz, a} = plotFrame(i), dx = x - px, dz = z - pz, c = Math.cos(a), s_ = Math.sin(a); return [dx*c - dz*s_, dx*s_ + dz*c]; }
+function toWorld(i, lx, lz){ const {px, pz, a} = plotFrame(i), c = Math.cos(a), s_ = Math.sin(a); return [px + lx*c + lz*s_, pz - lx*s_ + lz*c]; }
+
+/* ---- meshes ---- */
+const BRICK_GEO = box(.42, .26, .62);
+function itemMesh(it, plot){
+  const g = new THREE.Group();
+  if (it.kind === 'drop'){
+    const x = it.side*.7;
+    for (const dz of [-.5, .5]) put(g, M(box(.16, 2.4, .16), '#5d5650', 0, true), it.side*1.45, 1.2, it.z + dz);
+    put(g, M(box(1.6, 1, 1.3), it.col, 0, true), x, 2.55, it.z);
+    put(g, M(box(.16, .16, 1.4), '#5d5650', 0), it.side*1.45, 2.3, it.z);
+    const f = put(g, M(new THREE.ConeGeometry(.42, .55, 4), shade(it.col, -.15), 0), 0, 1.85, it.z); f.rotation.x = Math.PI; f.rotation.y = Math.PI/4;
+    const s = signMesh(textTex('+' + it.val, {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:90, w:256, h:128}), .8, .4);
+    s.position.set(x, 3.3, it.z + .66); g.add(s);
+  } else if (it.kind === 'up'){
+    for (const sx of [-.95, .95]) put(g, M(box(.25, 1.9, .5), it.col, 0, true), sx, .95, it.z);
+    put(g, M(box(2.2, .5, .7), shade(it.col, -.1), 0, true), 0, 1.95, it.z);
+    put(g, new THREE.Mesh(new THREE.PlaneGeometry(1.65, 1.2), new THREE.MeshBasicMaterial({color:it.id === 'kiln' ? '#ff8a3d' : '#9ff5f1', transparent:true, opacity:.4, side:THREE.DoubleSide})), 0, 1.05, it.z);
+    const s = signMesh(textTex(it.id === 'kiln' ? '🔥 ×٢' : '✨ ×١٫٥', {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:80, w:256, h:128}), 1, .5); s.position.set(0, 2.6, it.z); g.add(s);
+  } else if (it.id === 'walls'){
+    for (const [x, z, w, d] of [[-10.5, 0, .4, 22], [10.5, 0, .4, 22], [0, -10.8, 21.4, .4]]) put(g, M(box(w, 1.3, d), '#c96f4a', 0, true), x, .65, z);
+  } else if (it.id === 'roof'){
+    for (const x of [-4, 4]) for (const z of [-8, 0, 8]) put(g, M(box(.4, 5, .4), '#e3d6b4', 0, true), x, 2.5, z);
+    put(g, M(box(9, .3, 18.6), '#9fb6c9', 0, true), 0, 5.15, 0);
+  } else if (it.id === 'sign'){
+    for (const x of [-3.5, 3.5]) put(g, M(box(.3, 6, .3), '#5d5650', 0, true), x, 3, -10.2);
+    const s = signMesh(textTex('مصنع ' + (plot.ownerName || ''), {bg:'#ffc93c', fill:'#2b1a12', stroke:false, size:80}), 8, 2); s.position.set(0, 5, -10); g.add(s);
+    plot.bigSign = s;
+  } else if (it.id === 'chimney'){
+    put(g, M(cyl(.7, .9, 8, 12), '#b4472f', 0, true), -9, 4, 9.6);
+    put(g, M(cyl(.8, .8, .4, 12), '#3a3a3a', 0), -9, 8.1, 9.6);
+    plot.smoke = true;
+  } else if (it.id === 'auto'){
+    put(g, M(box(.8, .7, .5), '#f4cf3a', 0), 0, 2.45, 8.6);
+  } else if (it.id === 'speed'){
+    plot.fast = true;
+  }
+  return g;
+}
+function buildPlot(i){
+  const {px, pz, a} = plotFrame(i);
+  const g = new THREE.Group(); g.position.set(px, 0, pz); g.rotation.y = a; TY.root.add(g);
+  put(g, M(box(22, .2, 22), '#d8ccb4', 0), 0, .1, 0).receiveShadow = true;
+  put(g, M(box(22.4, .16, .5), '#8e8e8e', 0), 0, .1, 11);
+  const belt = put(g, new THREE.Mesh(box(1.2, .06, 16.4), new THREE.MeshLambertMaterial({map:TY.beltTex})), 0, .56, -.4);
+  put(g, M(box(1.4, .5, 16.4), '#5d5650', 0, true), 0, .26, -.4);
+  put(g, M(box(2.6, 2, 2.2), '#2fae6f', 0, true), 0, 1, 8.9);
+  const vault = signMesh(textTex('💵 0', {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:80, w:512, h:128}), 2.6, .65);
+  vault.position.set(0, 2.6, 10.05); g.add(vault);
+  const pad = put(g, new THREE.Mesh(cyl(.95, .95, .12, 24), new THREE.MeshLambertMaterial({color:'#2fae6f'})), 3.6, .2, 9.3);
+  const padSign = signMesh(textTex('اجمع الفلوس', {bg:'#2fae6f', fill:'#ffffff', size:70}), 2, .5); padSign.position.set(3.6, 1.3, 9.3); g.add(padSign);
+  const owner = signMesh(textTex('أرض فاضية', {bg:'#ffffff', fill:'#2b1a12', stroke:false, size:70}), 3.4, .85); owner.position.set(-5, 1.4, 11.2); g.add(owner);
+  put(g, M(box(.2, 1.2, .2), '#5d5650', 0), -5, .6, 11.1);
+  return {i, g, belt, vault, pad, padSign, owner, items:{}, mask:-1, bricks:[], pool:[], timers:{}, pendingShown:-1, ownerName:'', fast:false, smoke:false, ownerPeer:null};
+}
+function setPlotItems(plot, set, name){
+  if (plot.ownerName !== name){
+    plot.ownerName = name;
+    const t = plot.owner.material.map; t.text = name ? 'مصنع ' + name : 'أرض فاضية'; t.draw();
+    if (plot.bigSign){ const bt = plot.bigSign.material.map; bt.text = 'مصنع ' + name; bt.draw(); }
+  }
+  const mask = maskOf(set);
+  if (mask === plot.mask) return;
+  plot.mask = mask;
+  for (const it of TYI){
+    const has = set.has(it.id);
+    if (has && !plot.items[it.id]){ plot.items[it.id] = itemMesh(it, plot); plot.g.add(plot.items[it.id]); }
+    if (!has && plot.items[it.id]){ plot.g.remove(plot.items[it.id]); delete plot.items[it.id]; if (it.id === 'speed') plot.fast = false; if (it.id === 'chimney') plot.smoke = false; if (it.id === 'sign') plot.bigSign = null; }
+  }
+  tyObstacles();
+}
+function tyObstacles(){
+  TY.obs = [];
+  for (const p of TY.plots){
+    for (let z = -8; z <= 7.5; z += 1.4){ const [x, w] = toWorld(p.i, 0, z); TY.obs.push({x, z:w, r:.75}); }
+    { const [x, z] = toWorld(p.i, 0, 8.9); TY.obs.push({x, z, r:1.5}); }
+    for (const it of TYI) if (p.items[it.id] && it.kind === 'drop') for (const dz of [-.5, .5]){ const [x, z] = toWorld(p.i, it.side*1.45, it.z + dz); TY.obs.push({x, z, r:.25}); }
+    if (p.items.chimney){ const [x, z] = toWorld(p.i, -9, 9.6); TY.obs.push({x, z, r:.9}); }
+  }
+}
+
+/* ---- bricks on the belt ---- */
+function plotTick(p, dt, mine){
+  const speed = p.fast ? 3.6 : 2.1;
+  for (const it of TYI){
+    if (it.kind !== 'drop' || !p.items[it.id]) continue;
+    p.timers[it.id] = (p.timers[it.id] || Math.random()*it.every) - dt;
+    if (p.timers[it.id] <= 0 && p.bricks.length < 60){
+      p.timers[it.id] += it.every;
+      const m = p.pool.pop() || new THREE.Mesh(BRICK_GEO, toon('#a8603f'));
+      m.material = toon(it.col === '#a8603f' ? '#a8603f' : it.col); m.visible = true;
+      m.position.set(0, 1.6, it.z); p.g.add(m);
+      p.bricks.push({m, y:1.6, vy:0, z:it.z, val:it.val, ups:0});
+    }
+  }
+  for (let k = p.bricks.length - 1; k >= 0; k--){
+    const b = p.bricks[k];
+    if (b.y > .72){ b.vy -= 18*dt; b.y = Math.max(.72, b.y + b.vy*dt); }
+    else b.z += speed*dt;
+    for (const it of TYI){
+      if (it.kind !== 'up' || !p.items[it.id]) continue;
+      const bit = it.id === 'kiln' ? 1 : 2;
+      if (!(b.ups & bit) && b.z >= it.z){ b.ups |= bit; b.val *= it.mul; b.m.material = toon(it.id === 'kiln' ? '#b4472f' : '#2ec4c0'); if (mine && Math.random() < .5) burst(new THREE.Vector3(...toWorld(p.i, 0, it.z).flatMap((v, j) => j ? [1, v] : [v])), 3, it.id === 'kiln' ? ['#ff8a3d','#ffc93c'] : ['#9ff5f1','#ffffff'], {size:.08, speed:1, up:2, life:.5}); }
+    }
+    b.m.position.set(0, b.y, b.z);
+    if (b.z >= 7.7){
+      p.g.remove(b.m); p.pool.push(b.m); p.bricks.splice(k, 1);
+      if (mine) TY.pending += b.val*tyMult();
+    }
+  }
+  if (p.smoke && Math.random() < dt*4){ const [x, z] = toWorld(p.i, -9, 9.6); burst(new THREE.Vector3(x, 8.6, z), 1, ['#d8d2c2','#bfb8ad'], {size:.4, speed:.4, up:1.4, upMin:.8, grav:-.5, grow:2.5, life:2.4}); }
+}
+
+/* ---- buy pads for the next unlocks ---- */
+function padSpot(i){ return i < 8 ? [7, -9 + i*2.6] : [-7, -9 + (i - 8)*2.6]; }
+function nextItems(){ return TYI.filter(it => !TY.bought.has(it.id)).slice(0, 3); }
+function refreshPads(){
+  const p = TY.plots[TY.plot];
+  for (const pd of TY.pads) p && p.g.remove(pd.g);
+  TY.pads = [];
+  if (!p) return;
+  const list = nextItems();
+  list.forEach(it => {
+    const [sx, sz] = padSpot(TYIX[it.id]);
+    const g = new THREE.Group(); g.position.set(sx, 0, sz); p.g.add(g);
+    const ok = TY.cash >= it.price;
+    const disc = put(g, new THREE.Mesh(cyl(1, 1, .14, 24), new THREE.MeshLambertMaterial({color:ok ? '#2fae6f' : '#e84b3c'})), 0, .22, 0);
+    const s = signMesh(textTex(it.name + ' · ' + (it.price ? it.price + ' 💵' : 'ببلاش'), {bg:ok ? '#ffffff' : '#ffe0d8', fill:'#2b1a12', stroke:false, size:64, w:640, h:128}), 3.2, .64);
+    s.position.set(0, 1.5, 0); g.add(s);
+    TY.pads.push({g, it, disc, ok, lx:sx, lz:sz});
+  });
+  if (!list.length){
+    const g = new THREE.Group(); g.position.set(-4.5, 0, 9.4); p.g.add(g);
+    put(g, new THREE.Mesh(cyl(1.2, 1.2, .14, 24), new THREE.MeshLambertMaterial({color:'#8a5cf5'})), 0, .22, 0);
+    const s = signMesh(textTex('⭐ ابني من الأول (+٣٠٠ 💰)', {bg:'#8a5cf5', fill:'#ffffff', size:60, w:640, h:128}), 3.4, .68);
+    s.position.set(0, 1.6, 0); g.add(s);
+    TY.pads.push({g, rebirth:true, lx:-4.5, lz:9.4});
+  }
+}
+function buyItem(it){
+  if (TY.cash < it.price){ return; }
+  TY.cash -= it.price; TY.bought.add(it.id);
+  sfx('score'); setTimeout(() => sfx('coin'), 150);
+  const p = TY.plots[TY.plot];
+  setPlotItems(p, TY.bought, myNick);
+  const [x, z] = toWorld(TY.plot, 0, it.z || 0);
+  burst(new THREE.Vector3(x, 2.5, z), 18, ['#ffc93c','#ff5d8f','#2fae6f','#ffffff'], {cube:true, size:.12, speed:3, up:6});
+  toast('اشتريت ' + it.name + '! 🏭', 'good', 1.8);
+  if (it.price > 0) badge('factory');
+  if (it.id === 'kiln') badge('kiln');
+  if (TY.bought.size === TYI.length){ badge('tycoon'); toast('خلّصت المصنع كله! 🎉 تقدر تبنيه من الأول بمكسب أكبر', 'good', 4); }
+  refreshPads(); tySave(); presenceDirty = true;
+}
+function rebirth(){
+  TY.rb++; TY.cash = 0; TY.pending = 0; TY.bought = new Set(['d1']);
+  addGn(300, 'بنيت المصنع من الأول ⭐');
+  badge('rebirth');
+  toast('⭐ مكسب المصنع بقى ×' + tyMult().toFixed(1), 'good', 3.5);
+  setPlotItems(TY.plots[TY.plot], TY.bought, myNick); refreshPads(); tySave(); presenceDirty = true;
+}
+
+/* ---- world ---- */
+function buildTycoon(){
+  TY.root = new THREE.Group();
+  TY.beltTex = patternTex((x, n) => { x.fillStyle = '#3a3a3a'; x.fillRect(0, 0, n, n); x.fillStyle = '#ffc93c'; for (let i = 0; i < 4; i++) x.fillRect(0, i*n/4, n, n/16); }, 32, 1, 8);
+  const grass = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), toon('#7cc06a')); grass.rotation.x = -Math.PI/2; grass.receiveShadow = true; TY.root.add(grass);
+  for (const [w, d] of [[8, 64], [64, 8]]){ const r = put(TY.root, new THREE.Mesh(box(w, .06, d), toon('#8e8e8e')), 0, .03, 0); r.receiveShadow = true; }
+  const sign = signMesh(textTex('🧱 مصنع الطوب', {bg:'#ffc93c', fill:'#2b1a12', stroke:false, size:80}), 6, 1.5); sign.position.set(0, 4.2, 0); TY.root.add(sign);
+  put(TY.root, M(box(.3, 3.6, .3), '#5d5650', 0, true), 0, 1.8, 0);
+  TY.plots = [0, 1, 2, 3].map(buildPlot);
+  for (let i = 0; i < 16; i++){
+    const th = i/16*Math.PI*2, r = 40, h = 8 + (i*5 % 6);
+    put(TY.root, M(box(8, h, 6), HOUSE_COLORS[i % HOUSE_COLORS.length], 0, true), Math.sin(th)*r, h/2, Math.cos(th)*r).rotation.y = th;
+  }
+  tyObstacles();
+}
+let TY_HIDDEN = [];
+function pickPlot(){
+  const taken = new Set();
+  for (const a of avatars.values()) if (a.mi === 3 && Array.isArray(a.tyc)) taken.add(a.tyc[0]);
+  for (let i = 0; i < 4; i++) if (!taken.has(i)) return i;
+  return -1;
+}
+function enterTycoon(){
+  if (TY.on) return;
+  if (MODE.id) clearMode();
+  if (MATCH.on){ MATCH.on = false; $('timer').hidden = true; }
+  if (CR.on) exitCraft(true);
+  if (HUB.on) hubExit();
+  audioInit(); resetGame();
+  if (!TY.root) buildTycoon();
+  scene.add(TY.root);
+  TY_HIDDEN = ALLEY_OBJS.filter(o => o.visible); TY_HIDDEN.forEach(o => o.visible = false);
+  cart.g.visible = false; setNeighborsVisible(false); targetRing.visible = doorRing.visible = false;
+  if (!TY.bought.size) TY.bought.add('d1');
+  TY.on = true; TY.plot = pickPlot();
+  if (TY.plot >= 0){
+    setPlotItems(TY.plots[TY.plot], TY.bought, myNick); refreshPads();
+    const [x, z] = toWorld(TY.plot, 2.5, 12.5); Object.assign(P, {x, z, y:0, vy:0, air:false});
+    const [cx, cz] = toWorld(TY.plot, 0, 0); player.g.rotation.y = Math.atan2(cx - x, cz - z);
+    CAM.yaw = player.g.rotation.y + Math.PI;
+  } else { Object.assign(P, {x:0, z:4, y:0}); toast('الأراضي الأربعة مليانة. تقدر تتفرج لحد ما حد يخرج', 'warn', 3.5); }
+  CAM.pitch = .5; CAM.dist = 13;
+  ['start','over','results','pause'].forEach(x => $(x).hidden = true); togglePanel(null);
+  $('hearts').hidden = true; $('score').parentNode.hidden = true; $('coins').parentNode.hidden = true; $('tyPill').hidden = false;
+  btnState = ''; G.running = true; G.paused = false;
+  toast('أهلًا في مصنع الطوب! 🧱 امشي على الدواير الخضرا عشان تشتري', 'good', 3.5);
+  if (!store.get('hara-tyhint', false)){ setTimeout(() => toast('الطوب بيتحول فلوس في الخزنة. اقف على «اجمع الفلوس» عشان تاخدها', '', 4.5), 3800); store.set('hara-tyhint', true); }
+  presenceDirty = true;
+}
+function tyExit(){
+  if (!TY.on) return;
+  tySave();
+  scene.remove(TY.root);
+  TY_HIDDEN.forEach(o => o.visible = true); TY_HIDDEN = [];
+  cart.g.visible = true; setNeighborsVisible(true);
+  TY.on = false; $('tyPill').hidden = true;
+  $('hearts').hidden = false; $('score').parentNode.hidden = false; $('coins').parentNode.hidden = false;
+  $('menuBtn').textContent = '🎒 المقالب'; btnState = ''; refreshMenu();
+  presenceDirty = true;
+}
+function tyButtons(){
+  targetRing.visible = doorRing.visible = false;
+  if (btnState !== 'ty'){ btnState = 'ty'; $('prankIco').textContent = '🏭'; $('prankName').textContent = 'مصنعي'; $('menuBtn').hidden = false; $('menuBtn').textContent = '😀 حركات'; }
+  $('prank').classList.remove('dim'); $('prank').style.setProperty('--cd', '0');
+}
+function tyGoHome(){
+  if (TY.plot < 0) return;
+  const [x, z] = toWorld(TY.plot, 2.5, 12.5); P.x = x; P.z = z; P.y = 0; sfx('jump');
+}
+function tyPhysics(dt, mx, mz, mag, locked){
+  if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
+  for (const o of TY.obs){ const dx = P.x - o.x, dz = P.z - o.z, d = Math.hypot(dx, dz), r = o.r + .4; if (d < r && d > .001){ P.x = o.x + dx/d*r; P.z = o.z + dz/d*r; } }
+  P.x = clamp(P.x, -30, 30); P.z = clamp(P.z, -30, 30);
+  P.vy -= 24*dt; P.y += P.vy*dt;
+  if (P.y <= 0){ if (P.air && P.vy < -3){ player.sq = .72; sfx('land'); } P.y = 0; P.vy = 0; P.air = false; }
+}
+function tyFrame(dt){
+  if (!TY.on || dt <= 0) return;
+  TY.beltTex.offset.y -= dt*.8;
+  // who owns which plot (from presence)
+  TY.syncT = (TY.syncT || 0) - dt;
+  if (TY.syncT <= 0){
+    TY.syncT = .5;
+    const owners = {};
+    for (const a of avatars.values()) if (a.mi === 3 && Array.isArray(a.tyc) && a.tyc[0] >= 0 && a.tyc[0] < 4) owners[a.tyc[0]] = a;
+    const clash = owners[TY.plot];
+    if (TY.plot >= 0 && clash && clash.peer < meId()){
+      const old = TY.plot; TY.plot = -1;
+      setPlotItems(TY.plots[old], new Set(), '');
+      const np = pickPlot();
+      if (np >= 0){ TY.plot = np; setPlotItems(TY.plots[np], TY.bought, myNick); refreshPads(); tyGoHome(); toast('اتنقلت لأرض تانية', '', 2); }
+    }
+    for (const p of TY.plots){
+      if (p.i === TY.plot) continue;
+      const a = owners[p.i];
+      setPlotItems(p, a ? setOfMask(parseInt(a.tyc[1], 36) || 0) : new Set(), a ? a.name : '');
+    }
+    if (TY.plot < 0){ const np = pickPlot(); if (np >= 0){ TY.plot = np; setPlotItems(TY.plots[np], TY.bought, myNick); refreshPads(); tyGoHome(); toast('فيه أرض فضيت! دي بقت بتاعتك', 'good', 2.5); } }
+  }
+  for (const p of TY.plots) plotTick(p, dt, p.i === TY.plot);
+  const p = TY.plots[TY.plot];
+  if (p){
+    const [lx, lz] = toLocal(TY.plot, P.x, P.z);
+    if (TY.bought.has('auto') || Math.hypot(lx - 3.6, lz - 9.3) < 1.3){
+      if (TY.pending >= 1){
+        const got = Math.floor(TY.pending); TY.cash += got; TY.pending -= got;
+        if (!TY.bought.has('auto') || got >= 50){ sfx('coin'); const [x, z] = toWorld(TY.plot, 3.6, 9.3); pop('+' + got + ' 💵', new THREE.Vector3(x, 2.4, z), '#9fe3b8', 1.1, false); }
+      }
+    }
+    for (const pd of TY.pads){
+      if (Math.hypot(lx - pd.lx, lz - pd.lz) < 1.25){
+        if (pd.rebirth){ if (!TY.rebirthT || performance.now() - TY.rebirthT > 3000){ TY.rebirthT = performance.now(); rebirth(); } }
+        else if (TY.cash >= pd.it.price) buyItem(pd.it);
+        else if (!pd.warnT || performance.now() - pd.warnT > 2500){ pd.warnT = performance.now(); toast('محتاج ' + Math.ceil(pd.it.price - TY.cash) + ' 💵 كمان', 'warn', 1.4); }
+        break;
+      }
+    }
+    TY.padT -= dt;
+    if (TY.padT <= 0){ TY.padT = .4; if (TY.pads.some(pd => !pd.rebirth && pd.ok !== (TY.cash >= pd.it.price))) refreshPads(); }
+    const shown = Math.floor(TY.pending);
+    if (shown !== p.pendingShown){ p.pendingShown = shown; const t = p.vault.material.map; t.text = '💵 ' + shown; t.draw(); }
+  }
+  $('tyCash').textContent = Math.floor(TY.cash) + (TY.rb ? '  ⭐×' + tyMult().toFixed(1) : '');
+  TY.saveT += dt; if (TY.saveT > 6){ TY.saveT = 0; tySave(); }
+}
+
 /* scoreboard + timed match */
 function boardRows(){
   if (MODE.id) return modeRows().sort((a, b) => b.ms - a.ms).map(r => ({name:r.name, sc:r.md, me:r.id === meId()}));
@@ -4716,6 +5052,7 @@ function fillList(ol, rows){
 function renderBoard(){
   const rows = boardRows(), mini = $('mini');
   if (HUB.on){ mini.hidden = false; mini.textContent = '🏛️ الميدان · 🎖️ ' + BDG.size + ' نيشان'; }
+  else if (TY.on){ mini.hidden = false; mini.textContent = '🧱 مصنع الطوب · ' + (TY.plot >= 0 ? 'أرض ' + (TY.plot + 1) : 'بتتفرج') + ' · ' + TY.bought.size + '/' + TYI.length + ' مكنة'; }
   else if (CR.on){ mini.hidden = false; mini.textContent = craftInfo(); }
   else if (MODE.id){ mini.hidden = false; mini.textContent = modeInfo(); }
   else {
@@ -4744,6 +5081,7 @@ function respawn(){
   toast('اتمسكت ٣ مرات! رجعت للبداية -30', 'warn', 2.5);
 }
 function startMatch(by, dur){
+  if (TY.on) tyExit();
   if (HUB.on) hubExit();
   if (MODE.id) clearMode();
   audioInit();
@@ -4838,6 +5176,7 @@ function frame(now){
   let gy = 0;
   if (CR.on){ if (G.running && dt > 0) craftPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
   else if (HUB.on){ if (G.running && dt > 0) hubPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
+  else if (TY.on){ if (G.running && dt > 0) tyPhysics(dt, mx, mz, mag, locked); gy = P.y; P.on = null; }
   else {
   if (G.running && dt > 0){
     if (mag > .08 && !locked){ P.x += mx*P.speed*dt; P.z += mz*P.speed*dt; turnTo(player.g, mx, mz, dt); }
@@ -4887,7 +5226,7 @@ function frame(now){
     for (const k in cds) if (cds[k] > 0) cds[k] = Math.max(0, cds[k] - dt);
     const hostNow = isHost();
     if (hostNow !== wasHost){ wasHost = hostNow; onRoleChange(hostNow); }
-    if (MODE.id || CR.on || HUB.on){}
+    if (MODE.id || CR.on || HUB.on || TY.on){}
     else if (hostNow){ updateNeighbors(dt); updateCritters(dt); updateCart(dt); }
     else { updateNeighborsClient(dt); updateNetCritters(dt); }
     updateProjs(dt); updateTraps(dt);
@@ -4898,10 +5237,11 @@ function frame(now){
   modeFrame(wdt, rdt);
   craftFrame(wdt);
   hubFrame(rdt);
+  tyFrame(wdt);
   updatePets(rdt);
 
   // prank button state + target markers
-  if (CR.on) craftButtons(); else if (HUB.on) hubButtons(); else if (MODE.id) modeButtons(); else {
+  if (CR.on) craftButtons(); else if (HUB.on) hubButtons(); else if (TY.on) tyButtons(); else if (MODE.id) modeButtons(); else {
   let ok = G.running ? selected.can() === true : false;
   if (G.coins < selected.cost) ok = false;
   const cdv = cds[selected.id] > 0 ? cds[selected.id]/selected.cd : 0;
@@ -4943,7 +5283,7 @@ function frame(now){
   let cx = tx + Math.sin(CAM.yaw)*cpi*dist, cy = ty + spi*dist, cz = tz + Math.cos(CAM.yaw)*cpi*dist;
   const lim = (pv, cv, lm) => Math.abs(cv) <= lm ? 1 : (Math.sign(cv)*lm - pv)/(cv - pv);
   if (CR.on){ const tc = craftCamClip(tx, ty, tz, cx, cy, cz); cx = tx + (cx - tx)*tc; cy = ty + (cy - ty)*tc; cz = tz + (cz - tz)*tc; }
-  else if (!HUB.on){
+  else if (!HUB.on && !TY.on){
     const tt = Math.max(.03, Math.min(lim(tx, cx, 5.25), lim(tz, cz, L + 2.5)));
     if (tt < 1 && ty + (cy - ty)*tt < 12.5){ cx = tx + (cx - tx)*tt; cy = ty + (cy - ty)*tt; cz = tz + (cz - tz)*tt; }
   }
@@ -4955,7 +5295,7 @@ function frame(now){
   sun.position.set(P.x + 14, 26 + lift, P.z + 8); sun.target.position.set(P.x, 0, P.z - 4);
 
   // ---- labels ----
-  if (!MODE.id && !CR.on && !HUB.on) for (const n of neighbors){
+  if (!MODE.id && !CR.on && !HUB.on && !TY.on) for (const n of neighbors){
     const near = Math.hypot(n.x - P.x, n.z - P.z) < 16;
     n.tag.hidden = !near;
     if (near) placeEl(n.tag, n.p.g.position, 3.2);
